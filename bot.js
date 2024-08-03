@@ -1,4 +1,4 @@
-const scriptName = "test";
+const scriptName = "sharosu bot";
 
 const alreadyGameStartError = () => {
     const error = new Error("이미 게임 시작했습니다\n매장에 바로 방문하시면 게임을 즐기실 수 있어요");
@@ -72,6 +72,7 @@ const gameReservationInterface = () => {
         endToday: () => {
             context.gameCount = 1;
             context.reservationMap.clear();
+            context.reservationMap.set("A3", "19:00")
             context.gameStatus = GAME_STATUS.RESERVATION;
         }
     };
