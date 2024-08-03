@@ -134,21 +134,19 @@ const createSitAndGo = () => {
     const sitAndReservation = gameReservationInterface();
 
     const getGameInformation = () =>
-        "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
-        "싯앤고 stack game\n\n" +
+        "🏴‍☠️Final NIne 4ㅑ로수길🏴‍☠️\n" +
+        "🎲OTT -Sit & Go  \n\n" +
         "▪️" + sitAndReservation.gameCount + "부▪️\n\n" +
-        "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
-        "▪️7엔트리당 시드 10만\n" +
-        "◾️300만칩 시작 (150BB)\n" +
-        "▪️리바인 2회 (400만칩)\n" +
-        "◾️획득시드 2만당 몬스터 승점 1점\n" +
-        "▪️바인,리바인시 몬스터 승점 1점\n" +
-        "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
-        (sitAndReservation.gameCount == 1 ? "‼️1부 한정 얼리칩 +40‼️\n\n" : "") +
-        "❕예약자 명단 (최소 6포 이상/12포 밸런싱 )\n" +
+        "⏱️ Duration - 7 min\n\n" +
+        "🔳 최소 인원 5명 시작\n" +
+        "🔲 데일리와 바인금액 동일 / 시드1만 바인가능\n" +
+        "🔳 1등 - 3엔트리당 10,000시드\n" +
+        "🔲 1만시드당 주간 데일리 승점 +1점\n" +
+        "🔳 바인 200만칩  / 리바인2회 300만칩 \n" +
+        "🔲 최소인원 모이면 상시 진행\n\n" +
+        "📋예약자 명단(최소 5포 이상)\n" +
         "📢빠르고 원활한 게임진행을 위해\n" +
         "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
-        "◾️ A3\n" +
         reservationListToString() + "\n\n" +
         "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
 
