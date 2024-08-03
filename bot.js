@@ -34,15 +34,16 @@ const GAME_STATUS = {
 const gameReservationInterface = () => {
     const context = {
         gameCount: 1,
-        reservationList: [],
+        reservationMap: new Map([["A3", "19:00"]]),
         gameStatus: GAME_STATUS.RESERVATION,
-        reserve: (nicknamesString) => {
+        reserve: (nicknamesString, timeInput) => {
+            const time = timeInput ? timeInput : "현장";
             if (context.gameStatus === GAME_STATUS.START) {
                 throw alreadyGameStartError();
             }
             const nicknames = nicknamesString.split(",");
             for (nickname of nicknames) {
-                context.reservationList.push(nickname);
+                context.reservationMap.set(nickname, time);
             }
         },
         cancelReservation: (nicknamesString) => {
@@ -51,8 +52,7 @@ const gameReservationInterface = () => {
             }
             const nicknames = nicknamesString.split(",");
             for (nickname of nicknames) {
-                const index = context.reservationList.indexOf(nickname);
-                context.reservationList.splice(index, 1);
+                const index = context.reservationMap.delete(nickname);
             }
         },
         startGame: () => {
@@ -66,12 +66,12 @@ const gameReservationInterface = () => {
                 throw gameNotStartError();
             }
             context.gameCount++;
-            context.reservationList.length = 0;
+            context.reservationMap.clear();
             context.gameStatus = GAME_STATUS.RESERVATION;
         },
         endToday: () => {
             context.gameCount = 1;
-            context.reservationList.length = 0;
+            context.reservationMap.clear();
             context.gameStatus = GAME_STATUS.RESERVATION;
         }
     };
@@ -97,21 +97,20 @@ const createMonster = () => {
         "❕예약자 명단 (최소 6포 이상/12포 밸런싱 )\n" +
         "📢빠르고 원활한 게임진행을 위해\n" +
         "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
-        "◾️ A3\n" +
         reservationListToString() + "\n\n" +
         "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
 
     const reservationListToString = () => {
         let result = '';
 
-        for (item of monsterReservation.reservationList) {
-            result += '◾️ ' + item + '\n';
+        for ([key, value] of monsterReservation.reservationMap) {
+            result += '◾️ ' + key + " " + value + '\n';
         }
 
-        if (monsterReservation.reservationList.length >= 10) {
+        if (monsterReservation.reservationMap.size >= 10) {
             result += '◾ \n◾ \n';
         } else {
-            const repeatCount = 10 - monsterReservation.reservationList.length;
+            const repeatCount = 10 - monsterReservation.reservationMap.size;
             for (let i = 0; i < repeatCount; i++) {
                 result += '◾️ \n';
             }
@@ -156,14 +155,14 @@ const createSitAndGo = () => {
     const reservationListToString = () => {
         let result = '';
 
-        for (item of sitAndReservation.reservationList) {
-            result += '◾️ ' + item + '\n';
+        for ([key, value] of sitAndReservation.reservationMap) {
+            result += '◾️ ' + key + " " + value + '\n';
         }
 
-        if (sitAndReservation.reservationList.length >= 10) {
+        if (sitAndReservation.reservationMap.size >= 10) {
             result += '◾ \n◾ \n';
         } else {
-            const repeatCount = 10 - sitAndReservation.reservationList.length;
+            const repeatCount = 10 - sitAndReservation.reservationMap.size;
             for (let i = 0; i < repeatCount; i++) {
                 result += '◾️ \n';
             }
@@ -209,17 +208,17 @@ const createWeeklyTournament = () => {
         let result = '';
         let reservationCount = 0;
 
-        for (item of weeklyTournamentReservation.reservationList) {
-            result += '◾️ ' + item + '\n';
+        for ([key, value] of weeklyTournamentReservation.reservationMap) {
+            result += '◾️ ' + key + '\n';
             if (++reservationCount % 10 === 0) {
                 result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
             }
         }
 
-        if (weeklyTournamentReservation.reservationList.length >= 20) {
+        if (weeklyTournamentReservation.reservationMap.size >= 20) {
             result += '◾ \n◾ \n';
         } else {
-            const repeatCount = 20 - weeklyTournamentReservation.reservationList.length;
+            const repeatCount = 20 - weeklyTournamentReservation.reservationMap.size;
             for (let i = 0; i < repeatCount; i++) {
                 result += '◾️ \n';
                 if (++reservationCount % 10 === 0) {
@@ -279,31 +278,36 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                     break;
             }
 
-            if (gameType !== undefined) {
-                switch (msgTokenizer[1]) {
-                    case "예약":
-                        gameType.reserve(msgTokenizer[2]);
-                        replier.reply(gameType.getGameInformation());
-                        break;
-                    case "예약취소":
-                        gameType.cancelReservation(msgTokenizer[2]);
-                        replier.reply(gameType.getGameInformation());
-                        break;
-                    case "현황":
-                        replier.reply(gameType.getGameInformation());
-                        break;
-                    case "예약시작":
-                        checkStaff(sender);
-                        gameType.reserveNextGame();
-                        replier.reply(gameType.getGameInformation());
-                        break;
-                    case "예약마감":
-                        checkStaff(sender);
-                        gameType.startGame();
-                        replier.reply(gameType.gameName + "게임이 곧 시작됩니다.\n매장에 방문하시면 바로 게임을 즐기실 수 있어요");
-                        break;
-                    default:
-                        throw syntaxError();
+            if (gameType) {
+                if (msgTokenizer[1]) {
+                    switch (msgTokenizer[1]) {
+                        case "예약":
+                            const time = msgTokenizer[3];
+                            gameType.reserve(msgTokenizer[2], time);
+                            replier.reply(gameType.getGameInformation());
+                            break;
+                        case "예약취소":
+                            gameType.cancelReservation(msgTokenizer[2]);
+                            replier.reply(gameType.getGameInformation());
+                            break;
+                        case "현황":
+                            replier.reply(gameType.getGameInformation());
+                            break;
+                        case "예약시작":
+                            checkStaff(sender);
+                            gameType.reserveNextGame();
+                            replier.reply(gameType.getGameInformation());
+                            break;
+                        case "예약마감":
+                            checkStaff(sender);
+                            gameType.startGame();
+                            replier.reply(gameType.gameName + "게임이 곧 시작됩니다.\n매장에 방문하시면 바로 게임을 즐기실 수 있어요");
+                            break;
+                        default:
+                            throw syntaxError();
+                    }
+                } else {
+                    throw syntaxError();
                 }
             } else {
                 replier.reply("금일 샤로수점 마감하였습니다!");
