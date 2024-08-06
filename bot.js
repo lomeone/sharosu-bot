@@ -72,7 +72,7 @@ const gameReservationInterface = () => {
         endToday: () => {
             context.gameCount = 1;
             context.reservationMap.clear();
-            context.reservationMap.set("A3", "19:00")
+            context.reservationMap.set("A3", "19:00");
             context.gameStatus = GAME_STATUS.RESERVATION;
         }
     };
@@ -254,76 +254,84 @@ const isNotStaff = (sender) => {
     return !sender.includes("STAFF");
 };
 
-function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
-    const commandList = ["!몬스터", "!싯앤고", "!주토", "!샤로수마감"];
-    const msgTokenizer = msg.split(" ");
-    try {
-        if (commandList.includes(msgTokenizer[0])) {
-            let gameType;
-            switch (msgTokenizer[0]) {
-                case "!몬스터":
-                    gameType = monster;
-                    break;
-                case "!싯앤고":
-                    gameType = sitAndGo;
-                    break;
-                case "!주토":
-                    gameType = weeklyTournament;
-                    break;
-                case "!샤로수마감":
-                    checkStaff(sender);
-                    break;
-                default:
-                    break;
-            }
+const isBotRoom = (roomName) => {
+    const botRooms = ["bot 샤로수 테스트", "파이널나인 샤로수길점"];
+    return botRooms.includes(roomName);
+}
 
-            if (gameType) {
-                if (msgTokenizer[1]) {
-                    switch (msgTokenizer[1]) {
-                        case "예약":
-                            const time = msgTokenizer[3];
-                            gameType.reserve(msgTokenizer[2], time);
-                            replier.reply(gameType.getGameInformation());
-                            break;
-                        case "예약취소":
-                            gameType.cancelReservation(msgTokenizer[2]);
-                            replier.reply(gameType.getGameInformation());
-                            break;
-                        case "현황":
-                            replier.reply(gameType.getGameInformation());
-                            break;
-                        case "예약시작":
-                            checkStaff(sender);
-                            gameType.reserveNextGame();
-                            replier.reply(gameType.getGameInformation());
-                            break;
-                        case "예약마감":
-                            checkStaff(sender);
-                            gameType.startGame();
-                            replier.reply(gameType.gameName + "게임이 곧 시작됩니다.\n매장에 방문하시면 바로 게임을 즐기실 수 있어요");
-                            break;
-                        default:
-                            throw syntaxError();
+function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
+    if (isBotRoom(room)) {
+        const commandList = ["!몬스터", "!싯앤고", "!주토", "!샤로수마감"];
+        const msgTokenizer = msg.split(" ");
+        try {
+            if (commandList.includes(msgTokenizer[0])) {
+                let gameType;
+                switch (msgTokenizer[0]) {
+                    case "!몬스터":
+                        gameType = monster;
+                        break;
+                    case "!싯앤고":
+                        gameType = sitAndGo;
+                        break;
+                    case "!주토":
+                        gameType = weeklyTournament;
+                        break;
+                    case "!샤로수마감":
+                        checkStaff(sender);
+                        break;
+                    default:
+                        break;
+                }
+
+                if (gameType) {
+                    if (msgTokenizer[1]) {
+                        switch (msgTokenizer[1]) {
+                            case "예약":
+                                const time = msgTokenizer[3];
+                                gameType.reserve(msgTokenizer[2], time);
+                                replier.reply(gameType.getGameInformation());
+                                break;
+                            case "예약취소":
+                                gameType.cancelReservation(msgTokenizer[2]);
+                                replier.reply(gameType.getGameInformation());
+                                break;
+                            case "현황":
+                                replier.reply(gameType.getGameInformation());
+                                break;
+                            case "예약시작":
+                                checkStaff(sender);
+                                gameType.reserveNextGame();
+                                replier.reply(gameType.getGameInformation());
+                                break;
+                            case "예약마감":
+                                checkStaff(sender);
+                                gameType.startGame();
+                                replier.reply(gameType.gameName + "게임이 곧 시작됩니다.\n매장에 방문하시면 바로 게임을 즐기실 수 있어요");
+                                break;
+                            default:
+                                throw syntaxError();
+                        }
+                    } else {
+                        throw syntaxError();
                     }
                 } else {
-                    throw syntaxError();
-                }
-            } else {
-                replier.reply("금일 샤로수점 마감하였습니다!");
-                monster.endToday();
-                sitAndGo.endToday();
-                weeklyTournament.endToday();
-                const now = new Date();
-                if (now.getDay() === 0) {
-                    replier.reply(weeklyTournament.getGameInformation());
-                } else {
-                    replier.reply(monster.getGameInformation());
-                    replier.reply(sitAndGo.getGameInformation());
+                    replier.reply("금일 샤로수점 마감하였습니다!");
+                    monster.endToday();
+                    sitAndGo.endToday();
+                    weeklyTournament.endToday();
+                    const now = new Date();
+                    if (now.getDay() === 0) {
+                        replier.reply(weeklyTournament.getGameInformation());
+                    } else {
+                        replier.reply(monster.getGameInformation());
+                        replier.reply(sitAndGo.getGameInformation());
+                    }
                 }
             }
+        } catch(error) {
+            replier.reply(error.message);
         }
-    } catch(error) {
-        replier.reply(error.message);
+
     }
 }
 
