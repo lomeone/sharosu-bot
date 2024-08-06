@@ -1,5 +1,10 @@
 const scriptName = "sharosu bot";
 
+const weeklyTournamentOnlySundayError = () => {
+    const error = new Error("주간토너는 일요일에만 진행됩니다");
+    return error;
+};
+
 const alreadyGameStartError = () => {
     const error = new Error("이미 게임 시작했습니다\n매장에 바로 방문하시면 게임을 즐기실 수 있어요");
     return error;
@@ -28,7 +33,13 @@ const syntaxError = () => {
 // Define the GAME_STATUS enum
 const GAME_STATUS = {
     RESERVATION: 0,
-    START: 1
+    START: 1,
+    NOT_PLAY: 2
+};
+
+const isSunday = () => {
+    const now = new Date();
+    return now.getDay() === 0 && now.getHours() > 3 && now.getHours() < 20;
 };
 
 const gameReservationInterface = () => {
@@ -122,12 +133,27 @@ const createMonster = () => {
 
     return {
         gameName: "몬스터",
-        getGameInformation: getGameInformation,
+        getGameInformation: () => {
+            if (monsterReservation.gameStatus === GAME_STATUS.START) {
+                return "몬스터 " + monsterReservation.gameCount + "부가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
+            }
+
+            if (monsterReservation.gameStatus === GAME_STATUS.NOT_PLAY) {
+                return "아직 몬스터 게임이 진행되지 않아요"
+            }
+
+            return getGameInformation();
+        },
         reserve: monsterReservation.reserve,
         cancelReservation: monsterReservation.cancelReservation,
         startGame: monsterReservation.startGame,
         reserveNextGame: monsterReservation.reserveNextGame,
-        endToday: monsterReservation.endToday
+        endToday: () => {
+            monsterReservation.endToday();
+            if (isSunday()) {
+                monsterReservation.gameStatus = GAME_STATUS.NOT_PLAY;
+            }
+        }
     };
 };
 
@@ -172,17 +198,35 @@ const createSitAndGo = () => {
 
     return {
         gameName: "싯앤고",
-        getGameInformation: getGameInformation,
+        getGameInformation: () => {
+            if (sitAndReservation.gameStatus === GAME_STATUS.START) {
+                return "싯앤고 " + sitAndReservation.gameCount + "부가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
+            }
+            
+            if (sitAndReservation.gameStatus === GAME_STATUS.NOT_PLAY) {
+                return "아직 싯앤고 게임이 진행되지 않아요"
+            }
+
+            return getGameInformation();
+        },
         reserve: sitAndReservation.reserve,
         cancelReservation: sitAndReservation.cancelReservation,
         startGame: sitAndReservation.startGame,
         reserveNextGame: sitAndReservation.reserveNextGame,
-        endToday: sitAndReservation.endToday
+        endToday: () => {
+            sitAndReservation.endToday();
+            if (isSunday()) {
+                sitAndReservation.gameStatus = GAME_STATUS.NOT_PLAY;
+            }
+        }
     };
 };
 
 const createWeeklyTournament = () => {
     const weeklyTournamentReservation = gameReservationInterface();
+    if (!isSunday()) {
+        weeklyTournamentReservation.gameStatus = GAME_STATUS.NOT_PLAY;
+    }
 
     const getGameInformation = () =>
         "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
@@ -231,12 +275,32 @@ const createWeeklyTournament = () => {
 
     return {
         gameName: "주간토너",
-        getGameInformation: getGameInformation,
-        reserve: weeklyTournamentReservation.reserve,
+        getGameInformation: () => {
+
+            if (weeklyTournamentReservation.gameStatus === GAME_STATUS.RESERVATION) {
+
+                return getGameInformation();
+            }
+            if (weeklyTournamentReservation.gameStatus === GAME_STATUS.NOT_PLAY) {
+                return "주간토너는 일요일에만 진행되요!\n몬스터, 싯앤고, 데일리 게임을 참여해주세요";
+            }
+            return "주간토너가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
+        },
+        reserve: (nicknamesString, timeInput) => {
+            if (!isSunday()) {
+                throw weeklyTournamentOnlySundayError();
+            }
+            weeklyTournamentReservation.reserve(nicknamesString, timeInput);
+        },
         cancelReservation: weeklyTournamentReservation.cancelReservation,
         startGame: weeklyTournamentReservation.startGame,
         reserveNextGame: weeklyTournamentReservation.reserveNextGame,
-        endToday: weeklyTournamentReservation.endToday
+        endToday: () => {
+            weeklyTournamentReservation.endToday();
+            if (!isSunday()) {
+                weeklyTournamentReservation.gameStatus = GAME_STATUS.NOT_PLAY;
+            }
+        }
     };
 };
 
@@ -257,7 +321,7 @@ const isNotStaff = (sender) => {
 const isBotRoom = (roomName) => {
     const botRooms = ["bot 샤로수 테스트", "파이널나인 샤로수길점"];
     return botRooms.includes(roomName);
-}
+};
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
     if (isBotRoom(room)) {
@@ -295,7 +359,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                                 gameType.cancelReservation(msgTokenizer[2]);
                                 replier.reply(gameType.getGameInformation());
                                 break;
-                            case "현황":
+                            case "예약창":
                                 replier.reply(gameType.getGameInformation());
                                 break;
                             case "예약시작":
@@ -315,12 +379,11 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                         throw syntaxError();
                     }
                 } else {
-                    replier.reply("금일 샤로수점 마감하였습니다!");
+                    replier.reply("금일 샤로수점 마감하였습니다!\n오늘 방문해주신 샤밀리분들 감사합니다\n오늘 하루도 즐겁게 보내시고 저녁에 파나에서 만나요!");
                     monster.endToday();
                     sitAndGo.endToday();
                     weeklyTournament.endToday();
-                    const now = new Date();
-                    if (now.getDay() === 0) {
+                    if (isSunday()) {
                         replier.reply(weeklyTournament.getGameInformation());
                     } else {
                         replier.reply(monster.getGameInformation());
