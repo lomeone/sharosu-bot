@@ -139,7 +139,7 @@ const createMonster = () => {
             }
 
             if (monsterReservation.gameStatus === GAME_STATUS.NOT_PLAY) {
-                return "아직 몬스터 게임이 진행되지 않아요"
+                return "아직 몬스터 게임이 진행되지 않아요";
             }
 
             return getGameInformation();
@@ -204,7 +204,7 @@ const createSitAndGo = () => {
             }
             
             if (sitAndReservation.gameStatus === GAME_STATUS.NOT_PLAY) {
-                return "아직 싯앤고 게임이 진행되지 않아요"
+                return "아직 싯앤고 게임이 진행되지 않아요";
             }
 
             return getGameInformation();
@@ -314,8 +314,12 @@ const checkStaff = (sender) => {
     }
 };
 
+const isStaff = (sender) => {
+    return sender.includes("Manager") || sender.includes("STAFF");
+};
+
 const isNotStaff = (sender) => {
-    return !sender.includes("STAFF");
+    return !isStaff(sender);
 };
 
 const isBotRoom = (roomName) => {
@@ -325,6 +329,7 @@ const isBotRoom = (roomName) => {
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
     if (isBotRoom(room)) {
+        const questionCommand = "?샤로수봇";
         const commandList = ["!몬스터", "!싯앤고", "!주토", "!샤로수마감"];
         const msgTokenizer = msg.split(" ");
         try {
@@ -383,12 +388,21 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                     monster.endToday();
                     sitAndGo.endToday();
                     weeklyTournament.endToday();
-                    if (isSunday()) {
-                        replier.reply(weeklyTournament.getGameInformation());
-                    } else {
-                        replier.reply(monster.getGameInformation());
-                        replier.reply(sitAndGo.getGameInformation());
-                    }
+                    // if (isSunday()) {
+                    //     replier.reply(weeklyTournament.getGameInformation());
+                    // } else {
+                    //     replier.reply(monster.getGameInformation());
+                    //     replier.reply(sitAndGo.getGameInformation());
+                    // }
+                }
+            } else if (questionCommand === msgTokenizer[0]) {
+                const question = msgTokenizer[1];
+                if (question === "예약방법") {
+                    replier.reply(
+                        "!{게임종류} 예약 {닉네임} {도착예정시간}\n" +
+                        "예시: !몬스터 예약 샤로수봇 20:00\n" +
+                        "예시: !싯앤고 예약 샤로수봇,샤로수봇친구 20:00"
+                    );
                 }
             }
         } catch(error) {
