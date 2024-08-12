@@ -1,25 +1,5 @@
 const scriptName = "sharosu bot";
 
-const weeklyTournamentOnlySundayError = () => {
-    const error = new Error("주간토너는 일요일에만 진행됩니다");
-    return error;
-};
-
-const alreadyGameStartError = () => {
-    const error = new Error("이미 게임 시작했습니다\n매장에 바로 방문하시면 게임을 즐기실 수 있어요");
-    return error;
-};
-
-const alreadyGameStartErrorForStaff = () => {
-    const error = new Error("이미 게임 시작했습니다\n레자마감되면 다음 게임 예약을 올려주세요");
-    return error;
-};
-
-const gameNotStartError = () => {
-    const error = new Error("아직 게임이 시작되지 않았습니다.\n다음 게임 예약은 현재 예약받는 게임이 시작된 이후에 다시 올려드려요");
-    return error;
-};
-
 const notStaffError = ()=> {
     const error = new Error("직원만 사용할 수 있는 명령어입니다.");
     return error;
@@ -30,56 +10,31 @@ const syntaxError = () => {
     return error;
 };
 
-// Define the GAME_STATUS enum
-const GAME_STATUS = {
-    RESERVATION: 0,
-    START: 1,
-    NOT_PLAY: 2
-};
-
 const gameReservationInterface = () => {
     const context = {
         gameCount: 1,
         reservationMap: new Map([["A3", "19:00"]]),
-        gameStatus: GAME_STATUS.RESERVATION,
         reserve: (nicknamesString, timeInput) => {
             const time = timeInput ? timeInput : "현장";
-            if (context.gameStatus === GAME_STATUS.START) {
-                throw alreadyGameStartError();
-            }
             const nicknames = nicknamesString.split(",");
             for (nickname of nicknames) {
                 context.reservationMap.set(nickname, time);
             }
         },
         cancelReservation: (nicknamesString) => {
-            if (context.gameStatus === GAME_STATUS.START) {
-                throw alreadyGameStartError();
-            }
             const nicknames = nicknamesString.split(",");
             for (nickname of nicknames) {
                 const index = context.reservationMap.delete(nickname);
             }
         },
-        startGame: () => {
-            if (context.gameStatus === GAME_STATUS.START) {
-                throw alreadyGameStartErrorForStaff();
-            }
-            context.gameStatus = GAME_STATUS.START;
-        },
         reserveNextGame: () => {
-            if (context.gameStatus === GAME_STATUS.RESERVATION) {
-                throw gameNotStartError();
-            }
             context.gameCount++;
             context.reservationMap.clear();
-            context.gameStatus = GAME_STATUS.RESERVATION;
         },
         endToday: () => {
             context.gameCount = 1;
             context.reservationMap.clear();
             context.reservationMap.set("A3", "19:00");
-            context.gameStatus = GAME_STATUS.RESERVATION;
         }
     };
 
@@ -128,20 +83,9 @@ const createMonster = () => {
 
     return {
         gameName: "몬스터",
-        getGameInformation: () => {
-            if (monsterReservation.gameStatus === GAME_STATUS.START) {
-                return "몬스터 " + monsterReservation.gameCount + "부가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
-            }
-
-            if (monsterReservation.gameStatus === GAME_STATUS.NOT_PLAY) {
-                return "아직 몬스터 게임이 진행되지 않아요";
-            }
-
-            return getGameInformation();
-        },
+        getGameInformation: getGameInformation,
         reserve: monsterReservation.reserve,
         cancelReservation: monsterReservation.cancelReservation,
-        startGame: monsterReservation.startGame,
         reserveNextGame: monsterReservation.reserveNextGame,
         endToday: monsterReservation.endToday
     };
@@ -188,20 +132,9 @@ const createSitAndGo = () => {
 
     return {
         gameName: "싯앤고",
-        getGameInformation: () => {
-            if (sitAndReservation.gameStatus === GAME_STATUS.START) {
-                return "싯앤고 " + sitAndReservation.gameCount + "부가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
-            }
-            
-            if (sitAndReservation.gameStatus === GAME_STATUS.NOT_PLAY) {
-                return "아직 싯앤고 게임이 진행되지 않아요";
-            }
-
-            return getGameInformation();
-        },
+        getGameInformation: getGameInformation,
         reserve: sitAndReservation.reserve,
         cancelReservation: sitAndReservation.cancelReservation,
-        startGame: sitAndReservation.startGame,
         reserveNextGame: sitAndReservation.reserveNextGame,
         endToday: sitAndReservation.endToday
     };
@@ -257,22 +190,11 @@ const createWeeklyTournament = () => {
 
     return {
         gameName: "주간토너",
-        getGameInformation: () => {
-
-            if (weeklyTournamentReservation.gameStatus === GAME_STATUS.RESERVATION) {
-
-                return getGameInformation();
-            }
-            if (weeklyTournamentReservation.gameStatus === GAME_STATUS.NOT_PLAY) {
-                return "주간토너는 일요일에만 진행되요!\n몬스터, 싯앤고, 데일리 게임을 참여해주세요";
-            }
-            return "주간토너가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
-        },
+        getGameInformation: getGameInformation,
         reserve: (nicknamesString, timeInput) => {
             weeklyTournamentReservation.reserve(nicknamesString, timeInput);
         },
         cancelReservation: weeklyTournamentReservation.cancelReservation,
-        startGame: weeklyTournamentReservation.startGame,
         reserveNextGame: weeklyTournamentReservation.reserveNextGame,
         endToday: weeklyTournamentReservation.endToday
     };
@@ -289,7 +211,7 @@ const checkStaff = (sender) => {
 };
 
 const isStaff = (sender) => {
-    return sender.includes("Manager") || sender.includes("STAFF");
+    return sender.includes("(Manager)") || sender.includes("(STAFF)") || sender.includes("샤로수길점 대표");
 };
 
 const isNotStaff = (sender) => {
@@ -297,7 +219,7 @@ const isNotStaff = (sender) => {
 };
 
 const isBotRoom = (roomName) => {
-    const botRooms = ["bot 샤로수 테스트", "파이널나인 샤로수길점"];
+    const botRooms = ["bot 샤로수 테스트", "파이널나인 샤로수길점 테스트", "파이널나인 샤로수길점"];
     return botRooms.includes(roomName);
 };
 
@@ -341,15 +263,10 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                             case "예약창":
                                 replier.reply(gameType.getGameInformation());
                                 break;
-                            case "예약시작":
+                            case "다음게임":
                                 checkStaff(sender);
                                 gameType.reserveNextGame();
                                 replier.reply(gameType.getGameInformation());
-                                break;
-                            case "예약마감":
-                                checkStaff(sender);
-                                gameType.startGame();
-                                replier.reply(gameType.gameName + "게임이 곧 시작됩니다.\n매장에 방문하시면 바로 게임을 즐기실 수 있어요");
                                 break;
                             default:
                                 throw syntaxError();
