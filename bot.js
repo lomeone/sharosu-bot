@@ -37,11 +37,6 @@ const GAME_STATUS = {
     NOT_PLAY: 2
 };
 
-const isSunday = () => {
-    const now = new Date();
-    return now.getDay() === 0 && now.getHours() > 3 && now.getHours() < 20;
-};
-
 const gameReservationInterface = () => {
     const context = {
         gameCount: 1,
@@ -148,12 +143,7 @@ const createMonster = () => {
         cancelReservation: monsterReservation.cancelReservation,
         startGame: monsterReservation.startGame,
         reserveNextGame: monsterReservation.reserveNextGame,
-        endToday: () => {
-            monsterReservation.endToday();
-            if (isSunday()) {
-                monsterReservation.gameStatus = GAME_STATUS.NOT_PLAY;
-            }
-        }
+        endToday: monsterReservation.endToday
     };
 };
 
@@ -213,20 +203,12 @@ const createSitAndGo = () => {
         cancelReservation: sitAndReservation.cancelReservation,
         startGame: sitAndReservation.startGame,
         reserveNextGame: sitAndReservation.reserveNextGame,
-        endToday: () => {
-            sitAndReservation.endToday();
-            if (isSunday()) {
-                sitAndReservation.gameStatus = GAME_STATUS.NOT_PLAY;
-            }
-        }
+        endToday: sitAndReservation.endToday
     };
 };
 
 const createWeeklyTournament = () => {
     const weeklyTournamentReservation = gameReservationInterface();
-    if (!isSunday()) {
-        weeklyTournamentReservation.gameStatus = GAME_STATUS.NOT_PLAY;
-    }
 
     const getGameInformation = () =>
         "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
@@ -287,20 +269,12 @@ const createWeeklyTournament = () => {
             return "주간토너가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
         },
         reserve: (nicknamesString, timeInput) => {
-            if (!isSunday()) {
-                throw weeklyTournamentOnlySundayError();
-            }
             weeklyTournamentReservation.reserve(nicknamesString, timeInput);
         },
         cancelReservation: weeklyTournamentReservation.cancelReservation,
         startGame: weeklyTournamentReservation.startGame,
         reserveNextGame: weeklyTournamentReservation.reserveNextGame,
-        endToday: () => {
-            weeklyTournamentReservation.endToday();
-            if (!isSunday()) {
-                weeklyTournamentReservation.gameStatus = GAME_STATUS.NOT_PLAY;
-            }
-        }
+        endToday: weeklyTournamentReservation.endToday
     };
 };
 
@@ -388,12 +362,6 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                     monster.endToday();
                     sitAndGo.endToday();
                     weeklyTournament.endToday();
-                    // if (isSunday()) {
-                    //     replier.reply(weeklyTournament.getGameInformation());
-                    // } else {
-                    //     replier.reply(monster.getGameInformation());
-                    //     replier.reply(sitAndGo.getGameInformation());
-                    // }
                 }
             } else if (questionCommand === msgTokenizer[0]) {
                 const question = msgTokenizer[1];
