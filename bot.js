@@ -5,6 +5,16 @@ const alreadyGameStartError = () => {
     return error;
 };
 
+const notExistReserveNickname = () => {
+    const error = new Error("닉네임을 입력해주셔야 예약이 가능해요~!\n예시: !몬스터 예약 컴테 20:00");
+    return error;
+};
+
+const notExistCancelNickname = () => {
+    const error = new Error("예약취소할 닉네임을 입력해주세요\n예시: !몬스터 예약취소 컴테");
+    return error;
+};
+
 const alreadyGameStartErrorForStaff = () => {
     const error = new Error("단톡방집중~!\n예약을 받아야지 예약마감을 할 수 있어요~!");
     return error;
@@ -37,6 +47,9 @@ const gameReservationInterface = () => {
         reservationMap: new Map([["A3", "19:00"]]),
         gameStatus: GAME_STATUS.RESERVATION,
         reserve: (nicknamesString, timeInput) => {
+            if (!nicknamesString) {
+                throw notExistReserveNickname();
+            }
             const time = timeInput ? timeInput : "현장";
             if (context.gameStatus === GAME_STATUS.START) {
                 throw alreadyGameStartError();
@@ -47,6 +60,9 @@ const gameReservationInterface = () => {
             }
         },
         cancelReservation: (nicknamesString) => {
+            if (!nicknamesString) {
+                throw notExistCancelNickname();
+            }
             if (context.gameStatus === GAME_STATUS.START) {
                 throw alreadyGameStartError();
             }
@@ -124,7 +140,7 @@ const createMonster = () => {
         gameName: "몬스터",
         getGameInformation: () => {
             if (monsterReservation.gameStatus === GAME_STATUS.START) {
-                return "몬스터 " + monsterReservation.gameCount + "부가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
+                throw alreadyGameStartError();
             }
 
             return getGameInformation();
@@ -180,7 +196,7 @@ const createSitAndGo = () => {
         gameName: "싯앤고",
         getGameInformation: () => {
             if (sitAndReservation.gameStatus === GAME_STATUS.START) {
-                return "싯앤고 " + sitAndReservation.gameCount + "부가 진행되고 있어요\n매장에 방문하시면 바로 게임을 즐기실 수 있습니다";
+                throw alreadyGameStartError();
             }
 
             return getGameInformation();
@@ -335,10 +351,10 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                                 replier.reply(gameType.gameName + "게임 예약이 마감되었습니다\n별도 예약없이 매장에 방문하시면 바로 게임을 즐기실 수 있어요");
                                 break;
                             default:
-                                throw syntaxError();
+                                throw commandSyntaxError();
                         }
                     } else {
-                        throw syntaxError();
+                        throw commandSyntaxError();
                     }
                 } else {
                     replier.reply("금일 샤로수점 마감하였습니다!\n오늘도 방문해주신 샤밀리분들 감사합니다\n오늘 하루도 즐겁게 보내시고 저녁에 파나에서 만나요!");
@@ -355,6 +371,11 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                         "ex1) !몬스터 예약 컴테 20:00\n" +
                         "x2) !싯앤고 예약 컴테,컴테1 20:00\n" +
                         "♦️예약취소 - !몬스터 예약취소 컴테" 
+                    );
+                } else {
+                    replier.reply(
+                        "아직 예약방법 이외의 다른 질문은 답변을 못드려요ㅠㅠ\n" +
+                        "다른 질문도 받을 수 있도록 계속 발전해볼게요!"
                     );
                 }
             }
