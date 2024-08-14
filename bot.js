@@ -47,24 +47,24 @@ const gameReservationInterface = () => {
         reservationMap: new Map([["A3", "19:00"]]),
         gameStatus: GAME_STATUS.RESERVATION,
         reserve: (nicknamesString, timeInput) => {
+            if (context.gameStatus === GAME_STATUS.START) {
+                throw alreadyGameStartError();
+            }
             if (!nicknamesString) {
                 throw notExistReserveNickname();
             }
             const time = timeInput ? timeInput : "현장";
-            if (context.gameStatus === GAME_STATUS.START) {
-                throw alreadyGameStartError();
-            }
             const nicknames = nicknamesString.split(",");
             for (nickname of nicknames) {
                 context.reservationMap.set(nickname, time);
             }
         },
         cancelReservation: (nicknamesString) => {
-            if (!nicknamesString) {
-                throw notExistCancelNickname();
-            }
             if (context.gameStatus === GAME_STATUS.START) {
                 throw alreadyGameStartError();
+            }
+            if (!nicknamesString) {
+                throw notExistCancelNickname();
             }
             const nicknames = nicknamesString.split(",");
             for (nickname of nicknames) {
