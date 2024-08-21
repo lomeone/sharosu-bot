@@ -295,7 +295,7 @@ const isNotStaff = (sender) => {
 };
 
 const isBotRoom = (roomName) => {
-    const botRooms = ["bot 샤로수 테스트", "파이널나인 샤로수길점", "파이널나인 샤로수길점 테스트"];
+    const botRooms = ["bot 샤로수 테스트", "파이널나인 샤로수길점"];
     return botRooms.includes(roomName);
 };
 
@@ -304,11 +304,15 @@ const reserveValues = (value) => {
 
     const regexString = value.match(regex);
 
-    const reserveString = regexString != null ? regexString.replace(/\s+/g, "") : value.replace(/\s+/g, "");
+    const reserveString = regexString != null ? replaceGap(regexString[0]) : replaceGap(value);
 
-    const time = regexString != null ? value.slice(regexString[0].length) : "ㅎㅈ";
+    const time = regexString != null ? value.slice(regexString[0].length) : "현장";
 
     return [reserveString, time];
+};
+
+const replaceGap = (value) => {
+    return value.replace(/\s+/g, "");
 };
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
@@ -343,12 +347,12 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                     if (msgTokenizer[1]) {
                         switch (msgTokenizer[1]) {
                             case "예약":
-                                const [reserveString, time] = reserveValues(msg.slice(msgTokenizer[0].length + msgTokenizer[1].length))
+                                const [reserveString, time] = reserveValues(msg.slice(msgTokenizer[0].length + msgTokenizer[1].length + 2));
                                 gameType.reserve(reserveString, time);
                                 replier.reply(gameType.getGameInformation());
                                 break;
                             case "예약취소":
-                                const reserveList = msg.slice(msgTokenizer[0].length + msgTokenizer[1].length).replace(/\s+/g, "");
+                                const reserveList = replaceGap(msg.slice(msgTokenizer[0].length + msgTokenizer[1].length + 2));
                                 gameType.cancelReservation(reserveList);
                                 replier.reply(gameType.getGameInformation());
                                 break;
