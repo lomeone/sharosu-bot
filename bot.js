@@ -295,8 +295,20 @@ const isNotStaff = (sender) => {
 };
 
 const isBotRoom = (roomName) => {
-    const botRooms = ["bot 샤로수 테스트", "파이널나인 샤로수길점"];
+    const botRooms = ["bot 샤로수 테스트", "파이널나인 샤로수길점", "파이널나인 샤로수길점 테스트"];
     return botRooms.includes(roomName);
+};
+
+const reserveValues = (value) => {
+    const regex = /^[^,]+(?:,\s*[^,]+)* /;
+
+    const regexString = value.match(regex);
+
+    const reserveString = regexString != null ? regexString.replace(/\s+/g, "") : value.replace(/\s+/g, "");
+
+    const time = regexString != null ? value.slice(regexString[0].length) : "ㅎㅈ";
+
+    return [reserveString, time];
 };
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
@@ -331,12 +343,13 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                     if (msgTokenizer[1]) {
                         switch (msgTokenizer[1]) {
                             case "예약":
-                                const time = msgTokenizer[3];
-                                gameType.reserve(msgTokenizer[2], time);
+                                const [reserveString, time] = reserveValues(msg.slice(msgTokenizer[0].length + msgTokenizer[1].length))
+                                gameType.reserve(reserveString, time);
                                 replier.reply(gameType.getGameInformation());
                                 break;
                             case "예약취소":
-                                gameType.cancelReservation(msgTokenizer[2]);
+                                const reserveList = msg.slice(msgTokenizer[0].length + msgTokenizer[1].length).replace(/\s+/g, "");
+                                gameType.cancelReservation(reserveList);
                                 replier.reply(gameType.getGameInformation());
                                 break;
                             case "예약창":
