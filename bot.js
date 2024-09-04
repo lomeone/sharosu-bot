@@ -300,15 +300,11 @@ const isBotRoom = (roomName) => {
 };
 
 const reserveValues = (value) => {
-    const regex = /^[^,]+(?:,\s*[^,]+)* /;
+    const replaceValue = value.replace(", ", ",");
 
-    const regexString = value.match(regex);
+    const valueTokenizer = replaceValue.split(" ");
 
-    const reserveString = regexString != null ? replaceGap(regexString[0]) : replaceGap(value);
-
-    const time = regexString != null ? value.slice(regexString[0].length) : "현장";
-
-    return [reserveString, time];
+    return valueTokenizer;
 };
 
 const replaceGap = (value) => {
