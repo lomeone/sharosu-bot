@@ -1,4 +1,4 @@
-const scriptName = "itaewon bot";
+const scriptName = "itaewon-bot";
 
 const alreadyGameStartError = () => {
     const error = new Error("게임이 진행중이에요\n별도의 예약없이 매장에 바로 방문하시면 게임을 즐기실 수 있어요");
@@ -287,7 +287,7 @@ const checkStaff = (sender) => {
 };
 
 const isStaff = (sender) => {
-    return sender.includes("(Manager)") || sender.includes("(STAFF)") || sender.includes("이태원대장 무너") || sender.includes("A3");
+    return sender.includes("(Manager)") || sender.includes("(STAFF)") || sender.includes("이태원대장 무너") || sender === "A3";
 };
 
 const isNotStaff = (sender) => {
@@ -295,7 +295,7 @@ const isNotStaff = (sender) => {
 };
 
 const isBotRoom = (roomName) => {
-    const botRooms = ["이태원봇 테스트", "파이널나인 이태원점"];
+    const botRooms = ["파이널나인 이태원점", "이태원봇 테스트"];
     return botRooms.includes(roomName);
 };
 
@@ -313,7 +313,7 @@ const replaceGap = (value) => {
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
     if (isBotRoom(room)) {
-        const questionCommand = "?이태원봇";
+        const questionCommand = "?무너봇";
         const commandList = ["!몬스터", "!몬", "!싯앤고", "!싯", "!주토", "!이태원마감"];
         const msgTokenizer = msg.split(" ");
 
@@ -385,7 +385,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                         "1. 예약방법 \n" +
                         "!게임종류 예약 닉네임 도착예정시간\n" +
                         "ex1) !몬스터 예약 컴테 20:00\n" +
-                        "x2) !싯앤고 예약 컴테,컴테1 20:00\n" +
+                        "ex2) !싯앤고 예약 컴테,컴테1 20:00\n" +
                         "♦️예약취소 - !몬스터 예약취소 컴테" 
                     );
                 } else {
