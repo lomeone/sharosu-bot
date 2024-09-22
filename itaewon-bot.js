@@ -25,6 +25,11 @@ const gameNotStartError = () => {
     return error;
 };
 
+const notRoomMasterError = ()=> {
+    const error = new Error("방 관리자만 사용할 수 있는 명령어입니다.");
+    return error;
+};
+
 const notStaffError = ()=> {
     const error = new Error("스텝만 사용할 수 있는 명령어입니다.");
     return error;
@@ -274,18 +279,34 @@ const checkStaff = (sender) => {
     }
 };
 
-const staff = new Set();
+const staffList = new Set();
 
 const isStaff = (sender) => {
-    return sender === "파이널나인 이태원대장 영기" || sender === "박재형" || sender.includes("(STAFF)") || staff.has();
+    return isRoomMaster(sender) || staffList.has(sender);
 };
-
-const addStaff = (userName) => staff.add(userName);
-
-const removeStaff = (userName) => staff.delete(userName);
 
 const isNotStaff = (sender) => {
     return !isStaff(sender);
+};
+
+const addStaff = (userName) => staffList.add(userName);
+
+const removeStaff = (userName) => staffList.delete(userName);
+
+const getStaffList = () => "직원명단: " +  Array.from(staffList).join(", ");
+
+const checkRoomMaster = (sender) => {
+    if (isNotRoomMaster(sender)) {
+        throw notRoomMasterError();
+    }
+};
+
+const isRoomMaster = (sender) => {
+    return sender === "파이널나인 이태원대장 영기" || sender === "박재형" || sender === "컴테";
+};
+
+const isNotRoomMaster = (sender) => {
+    return !isRoomMaster(sender);
 };
 
 const isBotRoom = (roomName) => {
@@ -308,6 +329,7 @@ const replaceGap = (value) => {
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
     if (isBotRoom(room)) {
         const questionCommand = "?이태원봇";
+        const roomMasterCommand = "!직원";
         const commandList = ["!몬스터", "!몬", "!싯앤고", "!싯", "!주토", "!이태원마감"];
         const msgTokenizer = msg.split(" ");
 
@@ -387,6 +409,20 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packageName)
                         "아직 예약방법 이외의 다른 질문은 답변을 못드려요ㅠㅠ\n" +
                         "다른 질문도 받을 수 있도록 계속 발전해볼게요!"
                     );
+                }
+            } else if (roomMasterCommand === msgTokenizer[0]) {
+                checkRoomMaster(sender);
+                const command = msgTokenizer[1];
+                if (command === "등록") {
+                    addStaff(msgTokenizer[2]);
+                    replier.reply(getStaffList());
+                } else if (command === "해제") {
+                    removeStaff(msgTokenizer[2]);
+                    replier.reply(getStaffList());
+                } else if (command === "명단") {
+                    replier.reply(getStaffList());
+                } else {
+                    throw commandSyntaxError();
                 }
             }
         } catch(error) {
