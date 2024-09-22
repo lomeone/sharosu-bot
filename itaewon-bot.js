@@ -44,7 +44,7 @@ const GAME_STATUS = {
 const gameReservationInterface = () => {
     const context = {
         gameCount: 1,
-        reservationMap: new Map([["무너", "19:00"]]),
+        reservationMap: new Map([["무너쨩", "19:00"]]),
         gameStatus: GAME_STATUS.RESERVATION,
         reserve: (nicknamesString, timeInput) => {
             if (context.gameStatus === GAME_STATUS.START) {
@@ -88,7 +88,7 @@ const gameReservationInterface = () => {
         endToday: () => {
             context.gameCount = 1;
             context.reservationMap.clear();
-            context.reservationMap.set("무너", "19:00");
+            context.reservationMap.set("무너쨩", "19:00");
             context.gameStatus = GAME_STATUS.RESERVATION;
         }
     };
@@ -100,36 +100,30 @@ const createMonster = () => {
     const monsterReservation = gameReservationInterface();
 
     const getGameInformation = () =>
-        "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
-        "🎲Monster stack game\n\n" +
-        "▪️" + monsterReservation.gameCount + "부▪️\n\n" +
-        "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
-        "▪️7엔트리당 시드 10만\n" +
-        "◾️300만칩 시작 (150BB)\n" +
-        "▪️리바인 2회 (400만칩)\n" +
-        "◾️획득시드 2만당 몬스터 승점 1점\n" +
-        "▪️바인,리바인시 몬스터 승점 1점\n" +
-        "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
-        (monsterReservation.gameCount == 1 ? "‼️1부 한정 얼리칩 +40‼️\n\n" : "") +
-        "❕예약자 명단 (최소 6포 이상/12포 밸런싱 )\n" +
-        "📢빠르고 원활한 게임진행을 위해\n" +
-        "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
+        "✪ 𝗠 𝗢 𝗡 𝗦 𝗧 𝗘 𝗥 𝗚 𝗔 𝗠 𝗘 ✪\n\n" +
+        "➜ MTT 토너먼트 (엔트리제한X)\n" +
+        "➜ 300만칩 스타트 (150bb)\n" +
+        "➜ 리바인 2회 (400만칩)\n" +
+        "➜ 7엔트리당 시드 10만\n" +
+        "➜ 획득시드 2만당 승점 +1점 / 바인 +1점\n\n" +
+        "-" + monsterReservation.gameCount + "부-\n" +
+        "🅁 예약자 명단 (최소 6포이상)\n\n" +
         reservationListToString() + "\n\n" +
-        "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
+        "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
     const reservationListToString = () => {
         let result = '';
 
         for ([key, value] of monsterReservation.reservationMap) {
-            result += '◾️ ' + key + " " + value + '\n';
+            result += '★ ' + key + " " + value + '\n';
         }
 
         if (monsterReservation.reservationMap.size >= 10) {
-            result += '◾ \n◾ \n';
+            result += '★ \n★ \n';
         } else {
             const repeatCount = 10 - monsterReservation.reservationMap.size;
             for (let i = 0; i < repeatCount; i++) {
-                result += '◾️ \n';
+                result += '★ \n';
             }
         }
 
@@ -157,35 +151,30 @@ const createSitAndGo = () => {
     const sitAndReservation = gameReservationInterface();
 
     const getGameInformation = () =>
-        "🏴‍☠️Final NIne 4ㅑ로수길🏴‍☠️\n" +
-        "🎲OTT -Sit & Go  \n\n" +
-        "▪️" + sitAndReservation.gameCount + "부▪️\n\n" +
-        "⏱️ Duration - 7 min\n\n" +
-        "🔳 최소 인원 5명 시작\n" +
-        "🔲 데일리와 바인금액 동일 / 시드1만 바인가능\n" +
-        "🔳 1등 - 3엔트리당 10,000시드\n" +
-        "🔲 1만시드당 주간 데일리 승점 +1점\n" +
-        "🔳 바인 200만칩  / 리바인2회 300만칩 \n" +
-        "🔲 최소인원 모이면 상시 진행\n\n" +
-        "📋예약자 명단(최소 5포 이상)\n" +
-        "📢빠르고 원활한 게임진행을 위해\n" +
-        "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
+        "🅂 🄸 🅃  &  🄶 🄾\n\n" +
+        "➜ MTT 토너먼트 (엔트리제한X)\n" +
+        "➜ 200만칩 스타트\n" +
+        "➜ 리바인 2회 (300만칩)\n" +
+        "➜ 3엔트리당 시드 1만\n" +
+        "➜ 획득시드 2만당 승점 +1점\n\n" +
+        "-1부-\n" +
+        "🅁 예약자 명단 (최소 5포이상)\n\n" +
         reservationListToString() + "\n\n" +
-        "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
+        "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
     const reservationListToString = () => {
         let result = '';
 
         for ([key, value] of sitAndReservation.reservationMap) {
-            result += '◾️ ' + key + " " + value + '\n';
+            result += '★ ' + key + " " + value + '\n';
         }
 
         if (sitAndReservation.reservationMap.size >= 10) {
-            result += '◾ \n◾ \n';
+            result += '★ \n★ \n';
         } else {
             const repeatCount = 10 - sitAndReservation.reservationMap.size;
             for (let i = 0; i < repeatCount; i++) {
-                result += '◾️ \n';
+                result += '★ \n';
             }
         }
 
@@ -213,41 +202,40 @@ const createWeeklyTournament = () => {
     const weeklyTournamentReservation = gameReservationInterface();
 
     const getGameInformation = () =>
-        "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
-        "🎲 MTT-Weekly Tournaments \n\n" +
-        "⏱️ Duration - 10 min\n\n" +
-        "◾️일요일 20:00 시작, 스타트칩 150만\n" +
-        "▪️바인 15,000원, 리바인 2회 200만칩\n" +
-        "◾️시드바인 가능 , 포인트바인 불가\n\n" +
-        "▪️예약 Event▪️\n" +
+        "🅆 🄴 🄴 🄺 🄻 🅈\n" +
+        "🅃 🄾 🅄 🅁 🄽 🄰 🄼 🄴 🄽 🅃 🅂\n\n" +
+        "➜ 일요일 20:00 시작, 스타트칩 150만\n" +
+        "➜ 바인 15,000원, 리바인 2회 200만칩\n" +
+        "➜ 시드바인 가능 , 포인트바인 불가\n\n" +
+        "  ★예약 Event ★\n" +
         "3레벨 이전 사전 예약 참가자들께는\n" +
         "기존 150만칩+ 50만칩\n" +
-        "(총 200만칩 제공)\n\n" +
-        "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
+        "(총 200만칩 제공)\n" +
+        "▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁\n" +
         "•1등: 온라인 토너먼트 참여권 지급\n" +
-        "•바인 인원에 따라 시드 차등지급\n" +
-        "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
-        "📋예약자 명단 (최소 6포 이상)\n" +
+        "•바인 인원에 따라 시드 차등 지급\n" +
+        "▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔\n" +
+        "🅁 예약자 명단 (최소 6포 이상)\n\n" +
         reservationListToString() + "\n\n" +
-        "🔳 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
+        "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
     const reservationListToString = () => {
         let result = '';
         let reservationCount = 0;
 
         for ([key, value] of weeklyTournamentReservation.reservationMap) {
-            result += '◾️ ' + key + '\n';
+            result += '★ ' + key + '\n';
             if (++reservationCount % 10 === 0) {
                 result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
             }
         }
 
         if (weeklyTournamentReservation.reservationMap.size >= 20) {
-            result += '◾ \n◾ \n';
+            result += '★ \n★ \n';
         } else {
             const repeatCount = 20 - weeklyTournamentReservation.reservationMap.size;
             for (let i = 0; i < repeatCount; i++) {
-                result += '◾️ \n';
+                result += '★ \n';
                 if (++reservationCount % 10 === 0) {
                     result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
                 }
@@ -286,9 +274,15 @@ const checkStaff = (sender) => {
     }
 };
 
+const staff = new Set();
+
 const isStaff = (sender) => {
-    return sender.includes("(Manager)") || sender.includes("(STAFF)") || sender.includes("이태원대장 무너") || sender === "A3";
+    return sender === "파이널나인 이태원대장 영기" || sender === "박재형" || sender.includes("(STAFF)") || staff.has();
 };
+
+const addStaff = (userName) => staff.add(userName);
+
+const removeStaff = (userName) => staff.delete(userName);
 
 const isNotStaff = (sender) => {
     return !isStaff(sender);
@@ -313,7 +307,7 @@ const replaceGap = (value) => {
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
     if (isBotRoom(room)) {
-        const questionCommand = "?무너봇";
+        const questionCommand = "?이태원봇";
         const commandList = ["!몬스터", "!몬", "!싯앤고", "!싯", "!주토", "!이태원마감"];
         const msgTokenizer = msg.split(" ");
 
