@@ -1,0 +1,8 @@
+sharosu-bot v1.1.2 Release Notes
+================================
+
+Fixes since  v1.1.1
+===================
+
+* Bug Fixed
+1. 예약자 구분 replace 버그 수정
