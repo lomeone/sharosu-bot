@@ -300,7 +300,7 @@ const isBotRoom = (roomName) => {
 };
 
 const reserveValues = (value) => {
-    const replaceValue = value.replaceAll(", ", ",");
+    const replaceValue = value.replace(/, /g, ",");
 
     const valueTokenizer = replaceValue.split(" ");
 
