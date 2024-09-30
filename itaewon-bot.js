@@ -162,7 +162,7 @@ const createSitAndGo = () => {
         "➜ 리바인 2회 (300만칩)\n" +
         "➜ 3엔트리당 시드 1만\n" +
         "➜ 획득시드 2만당 승점 +1점\n\n" +
-        "-1부-\n" +
+        "-" + sitAndReservation.gameCount + "부-\n" +
         "🅁 예약자 명단 (최소 5포이상)\n\n" +
         reservationListToString() + "\n\n" +
         "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
@@ -310,7 +310,7 @@ const isNotRoomMaster = (sender) => {
 };
 
 const isBotRoom = (roomName) => {
-    const botRooms = ["파이널나인 이태원점", "이태원봇 테스트"];
+    const botRooms = ["파이널나인 이태원점", "이태원봇 테스트", "파이널나인 이태원점 봇관리방"];
     return botRooms.includes(roomName);
 };
 
