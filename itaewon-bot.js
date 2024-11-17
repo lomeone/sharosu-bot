@@ -46,6 +46,23 @@ const GAME_STATUS = {
     START: 1
 };
 
+const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com"
+
+const getReservation = (gameType) => {
+    const response = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + "/reservation")
+        .data("storeBranch", "itaewon")
+        .data("gameType", gameType)
+        .timeout(5000)
+        .get();
+
+    const data = JSON.parse(response.text());
+    
+    const gameCount = data.session % 100;
+    const reservation = data.reservation;
+
+    return { gameCount, reservation };
+}
+
 const gameReservationInterface = () => {
     const context = {
         gameCount: 1,
