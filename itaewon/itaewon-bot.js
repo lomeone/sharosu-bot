@@ -1,4 +1,4 @@
-const scriptName = "itaewon-bot";
+const scriptName = "itawon-bot";
 
 const alreadyGameStartError = () => {
   const error = new Error(
@@ -50,12 +50,11 @@ const commandSyntaxError = () => {
 
 const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com";
 
-var GAME_TYPE;
-(function (GAME_TYPE) {
-  GAME_TYPE["MONSTER"] = "몬스터";
-  GAME_TYPE["SIT_AND_GO"] = "싯앤고";
-  GAME_TYPE["WEEKLY_TOURNAMENT"] = "주간토너먼트";
-})(GAME_TYPE || (GAME_TYPE = {}));
+const GAME_TYPE = {
+  MONSTER: "몬스터",
+  SIT_AND_GO: "싯앤고",
+  WEEKLY_TOURNAMENT: "주간토너먼트",
+};
 
 const gameReservation = (gameType) => {
   return {
@@ -87,6 +86,7 @@ const gameReservation = (gameType) => {
       const response = org.jsoup.Jsoup.connect(
         RESERVATION_SERVER_URL + "/reservation"
       )
+        .header("Content-Type", "application/json")
         .requestBody(JSON.stringify(requestBody))
         .timeout(5000)
         .ignoreContentType(true)
@@ -96,27 +96,30 @@ const gameReservation = (gameType) => {
 
       const gameCount = data.session % 100;
       const reservation = data.reservation;
+
       return { gameCount, reservation };
     },
     cancelReservation: (nicknames) => {
       const requestBody = {
         storeBranch: "itaewon",
         gameType,
-        cancelUsers: nicknames,
+        reservationUsers: nicknames,
       };
 
       const response = org.jsoup.Jsoup.connect(
         RESERVATION_SERVER_URL + "/reservation/cancel"
       )
+        .header("Content-Type", "application/json")
         .requestBody(JSON.stringify(requestBody))
         .timeout(5000)
         .ignoreContentType(true)
-        .delete();
+        .post();
 
       const data = JSON.parse(response.text());
 
       const gameCount = data.session % 100;
       const reservation = data.reservation;
+
       return { gameCount, reservation };
     },
     startGame: () => {
@@ -128,6 +131,7 @@ const gameReservation = (gameType) => {
       const response = org.jsoup.Jsoup.connect(
         RESERVATION_SERVER_URL + "/reservation/close"
       )
+        .header("Content-Type", "application/json")
         .requestBody(JSON.stringify(requestBody))
         .timeout(5000)
         .ignoreContentType(true)
@@ -142,8 +146,9 @@ const gameReservation = (gameType) => {
       };
 
       const response = org.jsoup.Jsoup.connect(
-        RESERVATION_SERVER_URL + "/reservation/open"
+        RESERVATION_SERVER_URL + "/reservation/start"
       )
+        .header("Content-Type", "application/json")
         .requestBody(JSON.stringify(requestBody))
         .timeout(5000)
         .ignoreContentType(true)
@@ -153,6 +158,7 @@ const gameReservation = (gameType) => {
 
       const gameCount = data.session % 100;
       const reservation = data.reservation;
+
       return { gameCount, reservation };
     },
     endToday: () => {
@@ -169,8 +175,9 @@ const gameReservation = (gameType) => {
       };
 
       const response = org.jsoup.Jsoup.connect(
-        RESERVATION_SERVER_URL + "/reservation/open"
+        RESERVATION_SERVER_URL + "/reservation/start"
       )
+        .header("Content-Type", "application/json")
         .requestBody(JSON.stringify(requestBody))
         .timeout(5000)
         .ignoreContentType(true)
@@ -180,6 +187,7 @@ const gameReservation = (gameType) => {
 
       const gameCount = data.session % 100;
       const reservation = data.reservation;
+
       return { gameCount, reservation };
     },
   };
@@ -208,7 +216,7 @@ const monsterGame = () => {
 
   const reservationListToString = (reservation) => {
     let result = "";
-    for (const [nickname, time] of reservation) {
+    for ([nickname, time] of reservation) {
       result += "★ " + nickname + " " + time + "\n";
     }
 
@@ -249,12 +257,21 @@ const monsterGame = () => {
   };
 };
 
+let isDayFirst = true;
+
 const sitAndGoGame = () => {
   const sitAndGoReservation = gameReservation(GAME_TYPE.SIT_AND_GO);
 
   const getGameInformation = (gameCount, reservation) => {
+    const now = new Date();
+
+    if (now.getHours() >= 20) {
+      isDayFirst = false;
+    }
+
     return (
       "🅂 🄸 🅃  &  🄶 🄾\n\n" +
+      (gameCount === 1 && isDayFirst ? "🔥첫게임 2배 이벤트🔥\n\n" : "") +
       "➜ MTT 토너먼트 (엔트리제한X)\n" +
       "➜ 200만칩 스타트\n" +
       "➜ 리바인 2회 (300만칩)\n" +
@@ -273,7 +290,7 @@ const sitAndGoGame = () => {
   const reservationListToString = (reservation) => {
     let result = "";
 
-    for (const [nickname, time] of reservation) {
+    for ([nickname, time] of reservation) {
       result += "★ " + nickname + " " + time + "\n";
     }
 
@@ -310,7 +327,10 @@ const sitAndGoGame = () => {
     },
     startGame: sitAndGoReservation.startGame,
     openReservationNextGame: sitAndGoReservation.openReservationNextGame,
-    endToday: sitAndGoReservation.endToday,
+    endToday: () => {
+      isDayFirst = true;
+      sitAndGoReservation.endToday();
+    },
   };
 };
 
@@ -341,7 +361,7 @@ const weeklyTournamentGame = () => {
     let result = "";
     let reservationCount = 0;
 
-    for (const [nickname, time] of reservation) {
+    for ([nickname, time] of reservation) {
       result += "★ " + nickname + " " + time + "\n";
       if (++reservationCount % 10 === 0) {
         result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
@@ -399,9 +419,9 @@ const COMMANDS = {
   END_TODAY: "!이태원마감",
 };
 
-const QUESTION_COMMAND = "?이태원봇";
+const QUESTION_COMMANDS = "?이태원봇";
 
-const ROOM_MASTER_COMMAND = {
+const ROOM_MASTER_COMMANDS = {
   MANAGE_STAFF: "!직원",
 };
 
@@ -419,7 +439,7 @@ const isCommand = (command) => {
 };
 
 const isRoomMasterCommand = (command) => {
-  return Object.values(ROOM_MASTER_COMMAND).includes(command);
+  return Object.values(ROOM_MASTER_COMMANDS).includes(command);
 };
 
 const generateReservationValue = (value) => {
@@ -443,12 +463,6 @@ const isRoomMaster = (sender) => {
 
 const isNotRoomMaster = (sender) => {
   return !isRoomMaster(sender);
-};
-
-const checkRoomMaster = (sender) => {
-  if (isNotRoomMaster(sender)) {
-    throw notRoomMasterError();
-  }
 };
 
 const staffList = new Set();
@@ -510,16 +524,16 @@ function response(
 
         if (game !== undefined) {
           if (msgTokenizer[1]) {
-            if (msgTokenizer[1] === "예약") {
+            if (msgTokenizer[1] === "예약" || msgTokenizer[1] === "예약취소") {
               const { nicknames, time } = generateReservationValue(
                 msg.slice(msgTokenizer[0].length + msgTokenizer[1].length + 2)
               );
-              replier.reply(game.reserve(nicknames, time));
-            } else if (msgTokenizer[1] === "예약취소") {
-              const { nicknames } = generateReservationValue(
-                msg.slice(msgTokenizer[0].length + msgTokenizer[1].length + 2)
-              );
-              replier.reply(game.cancelReservation(nicknames));
+
+              if (msgTokenizer[1] === "예약") {
+                replier.reply(game.reserve(nicknames, time));
+              } else {
+                replier.reply(game.cancelReservation(nicknames));
+              }
             } else if (msgTokenizer[1] === "예약창") {
               replier.reply(game.getGameInformation());
             } else if (msgTokenizer[1] === "예약시작") {
