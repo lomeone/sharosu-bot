@@ -66,9 +66,10 @@ const gameReservation = (gameType) => {
       .data("gameType", gameType)
       .timeout(5000)
       .ignoreContentType(true)
-      .get();
+      .method(org.jsoup.Connection.Method.GET)
+      .execute();
 
-    const data = JSON.parse(response.text());
+    const data = JSON.parse(response.body());
 
     const gameCount = data.session % 100;
     const reservation = Object.entries(data.reservation);
@@ -91,9 +92,11 @@ const gameReservation = (gameType) => {
       .requestBody(JSON.stringify(requestBody))
       .timeout(5000)
       .ignoreContentType(true)
-      .post();
+      .ignoreHttpErrors(true)
+      .method(org.jsoup.Connection.Method.POST)
+      .execute();
 
-    const data = JSON.parse(response.text());
+    const data = JSON.parse(response.body());
 
     const gameCount = data.session % 100;
     const reservation = Object.entries(data.reservation);
@@ -115,9 +118,11 @@ const gameReservation = (gameType) => {
       .requestBody(JSON.stringify(requestBody))
       .timeout(5000)
       .ignoreContentType(true)
-      .post();
+      .ignoreHttpErrors(true)
+      .method(org.jsoup.Connection.Method.POST)
+      .execute();
 
-    const data = JSON.parse(response.text());
+    const data = JSON.parse(response.body());
 
     const gameCount = data.session % 100;
     const reservation = Object.entries(data.reservation);
@@ -138,9 +143,11 @@ const gameReservation = (gameType) => {
       .requestBody(JSON.stringify(requestBody))
       .timeout(5000)
       .ignoreContentType(true)
-      .post();
+      .ignoreHttpErrors(true)
+      .method(org.jsoup.Connection.Method.POST)
+      .execute();
 
-    const data = JSON.parse(response.text());
+    const data = JSON.parse(response.body());
   };
 
   const openReservationNextGame = () => {
@@ -156,9 +163,11 @@ const gameReservation = (gameType) => {
       .requestBody(JSON.stringify(requestBody))
       .timeout(5000)
       .ignoreContentType(true)
-      .post();
+      .ignoreHttpErrors(true)
+      .method(org.jsoup.Connection.Method.POST)
+      .execute();
 
-    const data = JSON.parse(response.text());
+    const data = JSON.parse(response.body());
 
     const gameCount = data.session % 100;
     const reservation = Object.entries(data.reservation);
@@ -186,9 +195,11 @@ const gameReservation = (gameType) => {
       .requestBody(JSON.stringify(requestBody))
       .timeout(5000)
       .ignoreContentType(true)
-      .post();
+      .ignoreHttpErrors(true)
+      .method(org.jsoup.Connection.Method.POST)
+      .execute();
 
-    const data = JSON.parse(response.text());
+    const data = JSON.parse(response.body());
 
     return reserve(["영기"], "19:00");
   };
