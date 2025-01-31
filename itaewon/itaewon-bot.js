@@ -48,7 +48,8 @@ const commandSyntaxError = () => {
   return error;
 };
 
-const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com";
+// const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com";
+const RESERVATION_SERVER_URL = "http://192.168.35.75:8080";
 
 const GAME_TYPE = {
   MONSTER: "몬스터",
@@ -57,139 +58,149 @@ const GAME_TYPE = {
 };
 
 const gameReservation = (gameType) => {
+  const getReservationInfo = () => {
+    const response = org.jsoup.Jsoup.connect(
+      RESERVATION_SERVER_URL + "/reservation"
+    )
+      .data("storeBranch", "itaewon")
+      .data("gameType", gameType)
+      .timeout(5000)
+      .ignoreContentType(true)
+      .get();
+
+    const data = JSON.parse(response.text());
+
+    const gameCount = data.session % 100;
+    const reservation = Object.entries(data.reservation);
+
+    return { gameCount, reservation };
+  };
+
+  const reserve = (nicknames, time) => {
+    const requestBody = {
+      storeBranch: "itaewon",
+      gameType,
+      reservationUsers: Array.from(nicknames),
+      reservationTime: time,
+    };
+
+    const response = org.jsoup.Jsoup.connect(
+      RESERVATION_SERVER_URL + "/reservation"
+    )
+      .header("Content-Type", "application/json")
+      .requestBody(JSON.stringify(requestBody))
+      .timeout(5000)
+      .ignoreContentType(true)
+      .post();
+
+    const data = JSON.parse(response.text());
+
+    const gameCount = data.session % 100;
+    const reservation = Object.entries(data.reservation);
+
+    return { gameCount, reservation };
+  };
+
+  const cancelReservation = (nicknames) => {
+    const requestBody = {
+      storeBranch: "itaewon",
+      gameType,
+      cancelUsers: Array.from(nicknames),
+    };
+
+    const response = org.jsoup.Jsoup.connect(
+      RESERVATION_SERVER_URL + "/reservation/cancel"
+    )
+      .header("Content-Type", "application/json")
+      .requestBody(JSON.stringify(requestBody))
+      .timeout(5000)
+      .ignoreContentType(true)
+      .post();
+
+    const data = JSON.parse(response.text());
+
+    const gameCount = data.session % 100;
+    const reservation = Object.entries(data.reservation);
+
+    return { gameCount, reservation };
+  };
+
+  const startGame = () => {
+    const requestBody = {
+      storeBranch: "itaewon",
+      gameType,
+    };
+
+    const response = org.jsoup.Jsoup.connect(
+      RESERVATION_SERVER_URL + "/reservation/close"
+    )
+      .header("Content-Type", "application/json")
+      .requestBody(JSON.stringify(requestBody))
+      .timeout(5000)
+      .ignoreContentType(true)
+      .post();
+
+    const data = JSON.parse(response.text());
+  };
+
+  const openReservationNextGame = () => {
+    const requestBody = {
+      storeBranch: "itaewon",
+      gameType,
+    };
+
+    const response = org.jsoup.Jsoup.connect(
+      RESERVATION_SERVER_URL + "/reservation/start"
+    )
+      .header("Content-Type", "application/json")
+      .requestBody(JSON.stringify(requestBody))
+      .timeout(5000)
+      .ignoreContentType(true)
+      .post();
+
+    const data = JSON.parse(response.text());
+
+    const gameCount = data.session % 100;
+    const reservation = Object.entries(data.reservation);
+
+    return { gameCount, reservation };
+  };
+
+  const endToday = () => {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const day = now.getDate().toString().padStart(2, "0");
+    const session = `${year}${month}${day}01`;
+
+    const requestBody = {
+      storeBranch: "itaewon",
+      gameType,
+      session,
+    };
+
+    const response = org.jsoup.Jsoup.connect(
+      RESERVATION_SERVER_URL + "/reservation/start"
+    )
+      .header("Content-Type", "application/json")
+      .requestBody(JSON.stringify(requestBody))
+      .timeout(5000)
+      .ignoreContentType(true)
+      .post();
+
+    const data = JSON.parse(response.text());
+
+    return reserve(["영기"], "19:00");
+  };
+
+
   return {
-    getReservationInfo: () => {
-      const response = org.jsoup.Jsoup.connect(
-        RESERVATION_SERVER_URL + "/reservation"
-      )
-        .data("storeBranch", "itaewon")
-        .data("gameType", gameType)
-        .timeout(5000)
-        .ignoreContentType(true)
-        .get();
-
-      const data = JSON.parse(response.text());
-
-      const gameCount = data.session % 100;
-      const reservation = data.reservation;
-
-      return { gameCount, reservation };
-    },
-    reserve: (nicknames, time) => {
-      const requestBody = {
-        storeBranch: "itaewon",
-        gameType,
-        reservationUsers: nicknames,
-        reservationTime: time,
-      };
-
-      const response = org.jsoup.Jsoup.connect(
-        RESERVATION_SERVER_URL + "/reservation"
-      )
-        .header("Content-Type", "application/json")
-        .requestBody(JSON.stringify(requestBody))
-        .timeout(5000)
-        .ignoreContentType(true)
-        .post();
-
-      const data = JSON.parse(response.text());
-
-      const gameCount = data.session % 100;
-      const reservation = data.reservation;
-
-      return { gameCount, reservation };
-    },
-    cancelReservation: (nicknames) => {
-      const requestBody = {
-        storeBranch: "itaewon",
-        gameType,
-        reservationUsers: nicknames,
-      };
-
-      const response = org.jsoup.Jsoup.connect(
-        RESERVATION_SERVER_URL + "/reservation/cancel"
-      )
-        .header("Content-Type", "application/json")
-        .requestBody(JSON.stringify(requestBody))
-        .timeout(5000)
-        .ignoreContentType(true)
-        .post();
-
-      const data = JSON.parse(response.text());
-
-      const gameCount = data.session % 100;
-      const reservation = data.reservation;
-
-      return { gameCount, reservation };
-    },
-    startGame: () => {
-      const requestBody = {
-        storeBranch: "itaewon",
-        gameType,
-      };
-
-      const response = org.jsoup.Jsoup.connect(
-        RESERVATION_SERVER_URL + "/reservation/close"
-      )
-        .header("Content-Type", "application/json")
-        .requestBody(JSON.stringify(requestBody))
-        .timeout(5000)
-        .ignoreContentType(true)
-        .post();
-
-      const data = JSON.parse(response.text());
-    },
-    openReservationNextGame: () => {
-      const requestBody = {
-        storeBranch: "itaewon",
-        gameType,
-      };
-
-      const response = org.jsoup.Jsoup.connect(
-        RESERVATION_SERVER_URL + "/reservation/start"
-      )
-        .header("Content-Type", "application/json")
-        .requestBody(JSON.stringify(requestBody))
-        .timeout(5000)
-        .ignoreContentType(true)
-        .post();
-
-      const data = JSON.parse(response.text());
-
-      const gameCount = data.session % 100;
-      const reservation = data.reservation;
-
-      return { gameCount, reservation };
-    },
-    endToday: () => {
-      const now = new Date();
-      const year = now.getFullYear().toString().slice(-2);
-      const month = (now.getMonth() + 1).toString().padStart(2, "0");
-      const day = now.getDate().toString().padStart(2, "0");
-      const session = `${year}${month}${day}01`;
-
-      const requestBody = {
-        storeBranch: "itaewon",
-        gameType,
-        session,
-      };
-
-      const response = org.jsoup.Jsoup.connect(
-        RESERVATION_SERVER_URL + "/reservation/start"
-      )
-        .header("Content-Type", "application/json")
-        .requestBody(JSON.stringify(requestBody))
-        .timeout(5000)
-        .ignoreContentType(true)
-        .post();
-
-      const data = JSON.parse(response.text());
-
-      const gameCount = data.session % 100;
-      const reservation = data.reservation;
-
-      return { gameCount, reservation };
-    },
+    getReservationInfo,
+    reserve,
+    cancelReservation,
+    startGame,
+    openReservationNextGame,
+    endToday,
   };
 };
 
@@ -204,12 +215,9 @@ const monsterGame = () => {
       "➜ 리바인 2회 (400만칩)\n" +
       "➜ 7엔트리당 시드 10만\n" +
       "➜ 획득시드 2만당 승점 +1점 / 바인 +1점\n\n" +
-      "-" +
-      gameCount +
-      "부-\n" +
+      "-" + gameCount + "부-\n" +
       "🅁 예약자 명단 (최소 6포이상)\n\n" +
-      reservationListToString(reservation) +
-      "\n\n" +
+      reservationListToString(reservation) + "\n" +
       "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
     );
   };
@@ -220,10 +228,10 @@ const monsterGame = () => {
       result += "★ " + nickname + " " + time + "\n";
     }
 
-    if (reservation.size >= 10) {
+    if (reservation.length >= 10) {
       result += "★ \n★ \n";
     } else {
-      const repeatCount = 10 - reservation.size;
+      const repeatCount = 10 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
         result += "★ \n";
       }
@@ -277,12 +285,9 @@ const sitAndGoGame = () => {
       "➜ 리바인 2회 (300만칩)\n" +
       "➜ 3엔트리당 시드 1만\n" +
       "➜ 획득시드 2만당 승점 +1점\n\n" +
-      "-" +
-      gameCount +
-      "부-\n" +
+      "-" + gameCount + "부-\n" +
       "🅁 예약자 명단 (최소 5포이상)\n\n" +
-      reservationListToString(reservation) +
-      "\n\n" +
+      reservationListToString(reservation) + "\n" +
       "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
     );
   };
@@ -294,10 +299,10 @@ const sitAndGoGame = () => {
       result += "★ " + nickname + " " + time + "\n";
     }
 
-    if (reservation.size >= 10) {
+    if (reservation.length >= 10) {
       result += "★ \n★ \n";
     } else {
-      const repeatCount = 10 - reservation.size;
+      const repeatCount = 10 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
         result += "★ \n";
       }
@@ -341,18 +346,21 @@ const weeklyTournamentGame = () => {
 
   const getGameInformation = (gameCount, reservation) => {
     return (
-      "🅆 🄴 🄴 🄺 🄻 🅈  🅃 🄾 🅄 🅁 🄽 🄰 🄼 🄴 🄽 🅃\n\n" +
-      "➜ MTT 토너먼트 (엔트리제한X)\n" +
-      "➜ 500만칩 스타트\n" +
-      "➜ 리바인 2회 (700만칩)\n" +
-      "➜ 5엔트리당 시드 1만\n" +
-      "➜ 획득시드 2만당 승점 +1점\n\n" +
-      "-" +
-      gameCount +
-      "부-\n" +
-      "🅁 예약자 명단 (최소 6포이상)\n\n" +
-      reservationListToString(reservation) +
-      "\n\n" +
+      "🅆 🄴 🄴 🄺 🄻 🅈\n" +
+      "🅃 🄾 🅄 🅁 🄽 🄰 🄼 🄴 🄽 🅃 🅂\n\n" +
+      "➜ 일요일 20:00 시작, 스타트칩 150만\n" +
+      "➜ 바인 15,000원, 리바인 2회 200만칩\n" +
+      "➜ 시드바인 가능 , 포인트바인 불가\n\n" +
+      "  ★예약 Event ★\n" +
+      "3레벨 이전 사전 예약 참가자들께는\n" +
+      "기존 150만칩+ 50만칩\n" +
+      "(총 200만칩 제공)\n" +
+      "▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁\n" +
+      "•1등: 온라인 토너먼트 참여권 지급\n" +
+      "•바인 인원에 따라 시드 차등 지급\n" +
+      "▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔\n" +
+      "🅁 예약자 명단 (최소 6포 이상)\n\n" +
+      reservationListToString(reservation) + "\n" +
       "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
     );
   };
@@ -362,16 +370,16 @@ const weeklyTournamentGame = () => {
     let reservationCount = 0;
 
     for ([nickname, time] of reservation) {
-      result += "★ " + nickname + " " + time + "\n";
+      result += "★ " + nickname + "\n";
       if (++reservationCount % 10 === 0) {
         result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
       }
     }
 
-    if (reservation.size >= 20) {
+    if (reservation.length >= 20) {
       result += "★ \n★ \n";
     } else {
-      const repeatCount = 20 - reservation.size;
+      const repeatCount = 20 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
         result += "★ \n";
         if (++reservationCount % 10 === 0) {
