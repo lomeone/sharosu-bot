@@ -229,6 +229,7 @@ const gameReservation = (gameType) => {
 
     if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
+      return data;
     }
 
     if (Math.floor(responseStatusCode / 100) === 4) {
@@ -324,7 +325,7 @@ const gameReservation = (gameType) => {
     if (Math.floor(responseStatusCode / 100) === 4) {
       const errorData = JSON.parse(response.body());
 
-      if (errorData.errorCode === "already-reserved-session") {
+      if (errorData.errorCode === "reservation/already-reserved-session") {
         throw duplicateReservationSessionError();
       }
     }
@@ -598,6 +599,10 @@ const isRoomMasterCommand = (command) => {
 const generateReservationValue = (value) => {
   const replaceValue = value.replace(/, /g, ",");
 
+  if (replaceValue === "") {
+    return { nicknames: new Set(), time: "현장" };
+  }
+
   const valueTokenizer = replaceValue.split(" ");
 
   const nicknames = new Set(valueTokenizer[0].split(","));
@@ -722,7 +727,7 @@ function response(
           sitAndGoGame().endToday();
           weeklyTournamentGame().endToday();
         }
-      } else if (msgTokenizer[0] === QUESTION_COMMAND) {
+      } else if (msgTokenizer[0] === QUESTION_COMMANDS) {
         const question = msgTokenizer[1];
         if (question === "예약방법") {
           replier.reply(
@@ -740,7 +745,7 @@ function response(
         }
       } else if (isRoomMasterCommand(msgTokenizer[0])) {
         checkRoomMaster(sender);
-        if (msgTokenizer[0] === ROOM_MASTER_COMMAND.MANAGE_STAFF) {
+        if (msgTokenizer[0] === ROOM_MASTER_COMMANDS.MANAGE_STAFF) {
           const command = msgTokenizer[1];
           if (command === "등록") {
             addStaff(msgTokenizer[2]);
