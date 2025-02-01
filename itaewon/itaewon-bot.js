@@ -564,6 +564,7 @@ const weeklyTournamentGame = () => {
 };
 
 const COMMANDS = {
+  RESERVATION_LIST: "!예약창",
   MONSTER: "!몬스터",
   MONSTER_SHORT: "!몬",
   SIT_AND_GO: "!싯앤고",
@@ -668,64 +669,72 @@ function response(
     const msgTokenizer = msg.split(" ");
     try {
       if (isCommand(msgTokenizer[0])) {
-        let game;
-        switch (msgTokenizer[0]) {
-          case COMMANDS.MONSTER:
-          case COMMANDS.MONSTER_SHORT:
-            game = monsterGame();
-            break;
-          case COMMANDS.SIT_AND_GO:
-          case COMMANDS.SIT_AND_GO_SHORT:
-            game = sitAndGoGame();
-            break;
-          case COMMANDS.WEEKLY_TOURNAMENT:
-          case COMMANDS.WEEKLY_TOURNAMENT_SHORT:
-            game = weeklyTournamentGame();
-            break;
-          default:
-            break;
-        }
-
-        if (game !== undefined) {
-          if (msgTokenizer[1]) {
-            if (msgTokenizer[1] === "예약" || msgTokenizer[1] === "예약취소") {
-              const { nicknames, time } = generateReservationValue(
-                msg.slice(msgTokenizer[0].length + msgTokenizer[1].length + 2)
-              );
-
-              if (msgTokenizer[1] === "예약") {
-                replier.reply(game.reserve(nicknames, time));
+        if (msgTokenizer[0] === COMMANDS.RESERVATION_LIST) {
+          replier.reply(monsterGame().getGameInformation());
+          replier.reply(sitAndGoGame().getGameInformation());
+          replier.reply(weeklyTournamentGame().getGameInformation());
+        } else {
+          let game;
+          switch (msgTokenizer[0]) {
+            case COMMANDS.MONSTER:
+            case COMMANDS.MONSTER_SHORT:
+              game = monsterGame();
+              break;
+            case COMMANDS.SIT_AND_GO:
+            case COMMANDS.SIT_AND_GO_SHORT:
+              game = sitAndGoGame();
+              break;
+            case COMMANDS.WEEKLY_TOURNAMENT:
+            case COMMANDS.WEEKLY_TOURNAMENT_SHORT:
+              game = weeklyTournamentGame();
+              break;
+            default:
+              break;
+          }
+  
+          if (game !== undefined) {
+            if (msgTokenizer[1]) {
+              if (msgTokenizer[1] === "예약" || msgTokenizer[1] === "예약취소") {
+                const { nicknames, time } = generateReservationValue(
+                  msg.slice(msgTokenizer[0].length + msgTokenizer[1].length + 2)
+                );
+  
+                if (msgTokenizer[1] === "예약") {
+                  replier.reply(game.reserve(nicknames, time));
+                } else {
+                  replier.reply(game.cancelReservation(nicknames));
+                }
+              } else if (msgTokenizer[1] === "예약창") {
+                replier.reply(game.getGameInformation());
+              } else if (msgTokenizer[1] === "예약시작") {
+                checkStaff(sender);
+                game.openReservationNextGame();
+                replier.reply(game.getGameInformation());
+              } else if (
+                msgTokenizer[1] === "예약마감" ||
+                msgTokenizer[1] === "마감"
+              ) {
+                checkStaff(sender);
+                game.closeReservation();
+                replier.reply(
+                  `${game.gameType} 게임 예약이 마감되었습니다\n별도 예약없이 매장에 방문하시면 바로 게임을 즐기실 수 있어요`
+                );
               } else {
-                replier.reply(game.cancelReservation(nicknames));
+                throw commandSyntaxError();
               }
-            } else if (msgTokenizer[1] === "예약창") {
-              replier.reply(game.getGameInformation());
-            } else if (msgTokenizer[1] === "예약시작") {
-              checkStaff(sender);
-              game.openReservationNextGame();
-              replier.reply(game.getGameInformation());
-            } else if (
-              msgTokenizer[1] === "예약마감" ||
-              msgTokenizer[1] === "마감"
-            ) {
-              checkStaff(sender);
-              game.closeReservation();
-              replier.reply(
-                `${game.gameType} 게임 예약이 마감되었습니다\n별도 예약없이 매장에 방문하시면 바로 게임을 즐기실 수 있어요`
-              );
             } else {
               throw commandSyntaxError();
             }
           } else {
-            throw commandSyntaxError();
+            replier.reply(
+              "금일 이태원점 마감하였습니다!\n오늘도 방문해주신 Fit밀리분들 감사합니다\n오늘 하루도 즐겁게 보내시고 저녁에 파나에서 만나요!"
+            );
+            monsterGame().endToday();
+            sitAndGoGame().endToday();
+            if (new Date().getDay() === 1) {
+              weeklyTournamentGame().endToday();
+            }
           }
-        } else {
-          replier.reply(
-            "금일 이태원점 마감하였습니다!\n오늘도 방문해주신 Fit밀리분들 감사합니다\n오늘 하루도 즐겁게 보내시고 저녁에 파나에서 만나요!"
-          );
-          monsterGame().endToday();
-          sitAndGoGame().endToday();
-          weeklyTournamentGame().endToday();
         }
       } else if (msgTokenizer[0] === QUESTION_COMMANDS) {
         const question = msgTokenizer[1];
