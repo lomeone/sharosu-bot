@@ -1,8 +1,8 @@
 const scriptName = "itawon-bot";
 
-const alreadyGameStartError = () => {
+const alreadyGameStartError = (gameType) => {
   const error = new Error(
-    "게임이 진행중이에요\n별도의 예약없이 매장에 바로 방문하시면 게임을 즐기실 수 있어요"
+    `${gameType} 게임이 진행중이에요\n별도의 예약없이 매장에 바로 방문하시면 게임을 즐기실 수 있어요`
   );
   return error;
 };
@@ -28,7 +28,7 @@ const alreadyGameStartErrorForStaff = () => {
   return error;
 };
 
-const gameNotStartError = () => {
+const reservationInprogressError = () => {
   const error = new Error("단톡방에 집중하세요~!\n게임 예약진행중이에요~!");
   return error;
 };
@@ -48,8 +48,29 @@ const commandSyntaxError = () => {
   return error;
 };
 
+const reservationNotFoundError = (gameType) => {
+  const error = new Error(
+    `${gameType} 게임 예약을 찾을 수 없어요\n관리자에게 문의해주세요`
+  );
+  return error;
+};
+
+const duplicateReservationSessionError = () => {
+  const error = new Error(
+    "이이 예약을 진행했던 세션이에요\n관리자에게 문의해주세요"
+  );
+  return error;
+};
+
+const systemError = () => {
+  const error = new Error(
+    "시스템 오류가 발생했어요\n잠시 후 다시 시도해주세요\n문제가 지속될 경우 관리자에게 문의해주세요"
+  );
+  return error;
+};
+
 // const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com";
-const RESERVATION_SERVER_URL = "http://192.168.35.75:8080";
+const RESERVATION_SERVER_URL = "http://172.30.1.19:8080";
 
 const GAME_TYPE = {
   MONSTER: "몬스터",
@@ -69,15 +90,33 @@ const gameReservation = (gameType) => {
       .method(org.jsoup.Connection.Method.GET)
       .execute();
 
-    const data = JSON.parse(response.body());
+    const responseStatusCode = response.statusCode();
 
-    const gameCount = data.session % 100;
-    const reservation = Object.entries(data.reservation);
+    if (responseStatusCode === 200) {
+      const data = JSON.parse(response.body());
 
-    return { gameCount, reservation };
+      if (data.status === "CLOSED") {
+        throw alreadyGameStartError(gameType);
+      }
+
+      const gameCount = data.session % 100;
+      const reservation = Object.entries(data.reservation);
+
+      return { gameCount, reservation };
+    }
+    if (responseStatusCode === 404) {
+      const errorData = JSON.parse(response.body());
+      if (errorData.errorCode === "reservation/not-found") {
+        throw reservationNotFoundError(gameType);
+      }
+    }
+    throw systemError();
   };
 
   const reserve = (nicknames, time) => {
+    if (nicknames.size === 0) {
+      throw notExistReserveNickname();
+    }
     const requestBody = {
       storeBranch: "itaewon",
       gameType,
@@ -96,15 +135,38 @@ const gameReservation = (gameType) => {
       .method(org.jsoup.Connection.Method.POST)
       .execute();
 
-    const data = JSON.parse(response.body());
+    const responseStatusCode = response.statusCode();
 
-    const gameCount = data.session % 100;
-    const reservation = Object.entries(data.reservation);
+    if (responseStatusCode === 200) {
+      const data = JSON.parse(response.body());
 
-    return { gameCount, reservation };
+      const gameCount = data.session % 100;
+      const reservation = Object.entries(data.reservation);
+
+      return { gameCount, reservation };
+    }
+
+    if (responseStatusCode === 400) {
+      const errorData = JSON.parse(response.body());
+      if (errorData.errorCode === "reservation/closed") {
+        throw alreadyGameStartError();
+      }
+    }
+
+    if (responseStatusCode === 404) {
+      const errorData = JSON.parse(response.body());
+      if (errorData.errorCode === "reservation/not-found") {
+        throw reservationNotFoundError(gameType);
+      }
+    }
+
+    throw systemError();
   };
 
   const cancelReservation = (nicknames) => {
+    if (nicknames.size === 0) {
+      throw notExistCancelNickname();
+    }
     const requestBody = {
       storeBranch: "itaewon",
       gameType,
@@ -122,15 +184,35 @@ const gameReservation = (gameType) => {
       .method(org.jsoup.Connection.Method.POST)
       .execute();
 
-    const data = JSON.parse(response.body());
+    const responseStatusCode = response.statusCode();
 
-    const gameCount = data.session % 100;
-    const reservation = Object.entries(data.reservation);
+    if (responseStatusCode === 200) {
+      const data = JSON.parse(response.body());
 
-    return { gameCount, reservation };
+      const gameCount = data.session % 100;
+      const reservation = Object.entries(data.reservation);
+
+      return { gameCount, reservation };
+    }
+
+    if (responseStatusCode === 400) {
+      const errorData = JSON.parse(response.body());
+      if (errorData.errorCode === "reservation/closed") {
+        throw alreadyGameStartError();
+      }
+    }
+
+    if (responseStatusCode === 404) {
+      const errorData = JSON.parse(response.body());
+      if (errorData.errorCode === "reservation/not-found") {
+        throw reservationNotFoundError(gameType);
+      }
+    }
+
+    throw systemError();
   };
 
-  const startGame = () => {
+  const closeReservation = () => {
     const requestBody = {
       storeBranch: "itaewon",
       gameType,
@@ -147,7 +229,23 @@ const gameReservation = (gameType) => {
       .method(org.jsoup.Connection.Method.POST)
       .execute();
 
-    const data = JSON.parse(response.body());
+    const responseStatusCode = response.statusCode();
+
+    if (responseStatusCode !== 200) {
+      const data = JSON.parse(response.body());
+    }
+
+    if (responseStatusCode === 400) {
+      if (errorData.errorCode === "reservation/closed") {
+        throw alreadyGameStartErrorForStaff();
+      }
+    }
+
+    if (responseStatusCode === 404) {
+      if (errorData.errorCode === "reservation/not-found") {
+        throw reservationNotFoundError(gameType);
+      }
+    }
   };
 
   const openReservationNextGame = () => {
@@ -167,12 +265,31 @@ const gameReservation = (gameType) => {
       .method(org.jsoup.Connection.Method.POST)
       .execute();
 
-    const data = JSON.parse(response.body());
+    const responseStatusCode = response.statusCode();
 
-    const gameCount = data.session % 100;
-    const reservation = Object.entries(data.reservation);
+    if (responseStatusCode !== 200) {
+      const data = JSON.parse(response.body());
 
-    return { gameCount, reservation };
+      const gameCount = data.session % 100;
+      const reservation = Object.entries(data.reservation);
+
+      return { gameCount, reservation };
+    }
+
+    if (responseStatusCode === 400) {
+      const errorData = JSON.parse(response.body());
+      if (errorData.errorCode === "reservation/in-progress") {
+        throw reservationInprogressError();
+      }
+    }
+
+    if (responseStatusCode === 404) {
+      if (errorData.errorCode === "reservation/not-found") {
+        throw reservationNotFoundError(gameType);
+      }
+    }
+
+    throw systemError();
   };
 
   const endToday = () => {
@@ -199,17 +316,28 @@ const gameReservation = (gameType) => {
       .method(org.jsoup.Connection.Method.POST)
       .execute();
 
-    const data = JSON.parse(response.body());
+    const responseStatusCode = response.statusCode();
 
-    return reserve(["영기"], "19:00");
+    if (responseStatusCode !== 200) {
+      const data = JSON.parse(response.body());
+
+      return reserve(["영기"], "19:00");
+    }
+
+    if (responseStatusCode === 400) {
+      if (errorData.errorCode === "already-reserved-session") {
+        throw duplicateReservationSessionError();
+      }
+    }
+
+    throw systemError();
   };
-
 
   return {
     getReservationInfo,
     reserve,
     cancelReservation,
-    startGame,
+    closeReservation,
     openReservationNextGame,
     endToday,
   };
@@ -226,9 +354,12 @@ const monsterGame = () => {
       "➜ 리바인 2회 (400만칩)\n" +
       "➜ 7엔트리당 시드 10만\n" +
       "➜ 획득시드 2만당 승점 +1점 / 바인 +1점\n\n" +
-      "-" + gameCount + "부-\n" +
+      "-" +
+      gameCount +
+      "부-\n" +
       "🅁 예약자 명단 (최소 6포이상)\n\n" +
-      reservationListToString(reservation) + "\n" +
+      reservationListToString(reservation) +
+      "\n" +
       "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
     );
   };
@@ -270,7 +401,7 @@ const monsterGame = () => {
         monsterReservation.cancelReservation(nicknames);
       return getGameInformation(gameCount, reservation);
     },
-    startGame: monsterReservation.startGame,
+    closeReservation: monsterReservation.closeReservation,
     openReservationNextGame: monsterReservation.openReservationNextGame,
     endToday: monsterReservation.endToday,
   };
@@ -296,9 +427,12 @@ const sitAndGoGame = () => {
       "➜ 리바인 2회 (300만칩)\n" +
       "➜ 3엔트리당 시드 1만\n" +
       "➜ 획득시드 2만당 승점 +1점\n\n" +
-      "-" + gameCount + "부-\n" +
+      "-" +
+      gameCount +
+      "부-\n" +
       "🅁 예약자 명단 (최소 5포이상)\n\n" +
-      reservationListToString(reservation) + "\n" +
+      reservationListToString(reservation) +
+      "\n" +
       "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
     );
   };
@@ -341,7 +475,7 @@ const sitAndGoGame = () => {
         sitAndGoReservation.cancelReservation(nicknames);
       return getGameInformation(gameCount, reservation);
     },
-    startGame: sitAndGoReservation.startGame,
+    closeReservation: sitAndGoReservation.closeReservation,
     openReservationNextGame: sitAndGoReservation.openReservationNextGame,
     endToday: () => {
       isDayFirst = true;
@@ -371,7 +505,8 @@ const weeklyTournamentGame = () => {
       "•바인 인원에 따라 시드 차등 지급\n" +
       "▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔\n" +
       "🅁 예약자 명단 (최소 6포 이상)\n\n" +
-      reservationListToString(reservation) + "\n" +
+      reservationListToString(reservation) +
+      "\n" +
       "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
     );
   };
@@ -421,7 +556,7 @@ const weeklyTournamentGame = () => {
         weeklyTournamentReservation.cancelReservation(nicknames);
       return getGameInformation(gameCount, reservation);
     },
-    startGame: weeklyTournamentReservation.startGame,
+    closeReservation: weeklyTournamentReservation.closeReservation,
     openReservationNextGame:
       weeklyTournamentReservation.openReservationNextGame,
     endToday: weeklyTournamentReservation.endToday,
@@ -482,6 +617,12 @@ const isRoomMaster = (sender) => {
 
 const isNotRoomMaster = (sender) => {
   return !isRoomMaster(sender);
+};
+
+const checkRoomMaster = (sender) => {
+  if (isNotRoomMaster(sender)) {
+    throw notRoomMasterError();
+  }
 };
 
 const staffList = new Set();
@@ -564,7 +705,7 @@ function response(
               msgTokenizer[1] === "마감"
             ) {
               checkStaff(sender);
-              game.startGame();
+              game.closeReservation();
               replier.reply(
                 game.gameType +
                   "게임 예약이 마감되었습니다\n별도 예약없이 매장에 방문하시면 바로 게임을 즐기실 수 있어요"
