@@ -146,15 +146,13 @@ const gameReservation = (gameType) => {
       return { gameCount, reservation };
     }
 
-    if (responseStatusCode === 400) {
+    if (Math.floor(responseStatusCode / 100) === 4) {
       const errorData = JSON.parse(response.body());
+
       if (errorData.errorCode === "reservation/closed") {
         throw alreadyGameStartError();
       }
-    }
 
-    if (responseStatusCode === 404) {
-      const errorData = JSON.parse(response.body());
       if (errorData.errorCode === "reservation/not-found") {
         throw reservationNotFoundError(gameType);
       }
@@ -195,15 +193,13 @@ const gameReservation = (gameType) => {
       return { gameCount, reservation };
     }
 
-    if (responseStatusCode === 400) {
+    if (Math.floor(responseStatusCode / 100) === 4) {
       const errorData = JSON.parse(response.body());
+
       if (errorData.errorCode === "reservation/closed") {
         throw alreadyGameStartError();
       }
-    }
 
-    if (responseStatusCode === 404) {
-      const errorData = JSON.parse(response.body());
       if (errorData.errorCode === "reservation/not-found") {
         throw reservationNotFoundError(gameType);
       }
@@ -231,21 +227,23 @@ const gameReservation = (gameType) => {
 
     const responseStatusCode = response.statusCode();
 
-    if (responseStatusCode !== 200) {
+    if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
     }
 
-    if (responseStatusCode === 400) {
+    if (Math.floor(responseStatusCode / 100) === 4) {
+      const errorData = JSON.parse(response.body());
+
       if (errorData.errorCode === "reservation/closed") {
         throw alreadyGameStartErrorForStaff();
       }
-    }
 
-    if (responseStatusCode === 404) {
       if (errorData.errorCode === "reservation/not-found") {
         throw reservationNotFoundError(gameType);
       }
     }
+
+    throw systemError();
   };
 
   const openReservationNextGame = () => {
@@ -267,7 +265,7 @@ const gameReservation = (gameType) => {
 
     const responseStatusCode = response.statusCode();
 
-    if (responseStatusCode !== 200) {
+    if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
 
       const gameCount = data.session % 100;
@@ -276,14 +274,13 @@ const gameReservation = (gameType) => {
       return { gameCount, reservation };
     }
 
-    if (responseStatusCode === 400) {
+    if (Math.floor(responseStatusCode / 100) === 4) {
       const errorData = JSON.parse(response.body());
+
       if (errorData.errorCode === "reservation/in-progress") {
         throw reservationInprogressError();
       }
-    }
 
-    if (responseStatusCode === 404) {
       if (errorData.errorCode === "reservation/not-found") {
         throw reservationNotFoundError(gameType);
       }
@@ -318,13 +315,15 @@ const gameReservation = (gameType) => {
 
     const responseStatusCode = response.statusCode();
 
-    if (responseStatusCode !== 200) {
+    if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
 
       return reserve(["영기"], "19:00");
     }
 
-    if (responseStatusCode === 400) {
+    if (Math.floor(responseStatusCode / 100) === 4) {
+      const errorData = JSON.parse(response.body());
+
       if (errorData.errorCode === "already-reserved-session") {
         throw duplicateReservationSessionError();
       }
@@ -707,8 +706,7 @@ function response(
               checkStaff(sender);
               game.closeReservation();
               replier.reply(
-                game.gameType +
-                  "게임 예약이 마감되었습니다\n별도 예약없이 매장에 방문하시면 바로 게임을 즐기실 수 있어요"
+                `${game.gameType} 게임 예약이 마감되었습니다\n별도 예약없이 매장에 방문하시면 바로 게임을 즐기실 수 있어요`
               );
             } else {
               throw commandSyntaxError();
