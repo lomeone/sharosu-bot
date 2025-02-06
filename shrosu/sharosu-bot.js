@@ -1,4 +1,4 @@
-const scriptName = "itawon-bot";
+const scriptName = "sharosu-bot";
 
 const alreadyGameStartError = (gameType) => {
   const error = new Error(
@@ -65,6 +65,7 @@ const systemError = () => {
 };
 
 const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com";
+const STORE_BRANCH = "sharosu";
 
 const GAME_TYPE = {
   MONSTER: "몬스터",
@@ -77,7 +78,7 @@ const gameReservation = (gameType) => {
     const response = org.jsoup.Jsoup.connect(
       RESERVATION_SERVER_URL + "/reservation"
     )
-      .data("storeBranch", "itaewon")
+      .data("storeBranch", STORE_BRANCH)
       .data("gameType", gameType)
       .timeout(5000)
       .ignoreContentType(true)
@@ -112,7 +113,7 @@ const gameReservation = (gameType) => {
       throw notExistReserveNickname();
     }
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
       reservationUsers: Array.from(nicknames),
       reservationTime: time,
@@ -160,7 +161,7 @@ const gameReservation = (gameType) => {
       throw notExistCancelNickname();
     }
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
       cancelUsers: Array.from(nicknames),
     };
@@ -204,7 +205,7 @@ const gameReservation = (gameType) => {
 
   const closeReservation = () => {
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
     };
 
@@ -243,7 +244,7 @@ const gameReservation = (gameType) => {
 
   const openReservationNextGame = () => {
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
     };
 
@@ -292,7 +293,7 @@ const gameReservation = (gameType) => {
     const session = `${year}${month}${day}01`;
 
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
       session,
     };
@@ -313,7 +314,7 @@ const gameReservation = (gameType) => {
     if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
 
-      return reserve(["영기"], "19:00");
+      return reserve(["A3"], "19:00");
     }
 
     if (Math.floor(responseStatusCode / 100) === 4) {
@@ -340,8 +341,7 @@ const gameReservation = (gameType) => {
 const monsterGame = () => {
   const monsterReservation = gameReservation(GAME_TYPE.MONSTER);
 
-  const getGameInformation = (gameCount, reservation) => {
-    return (
+  const getGameInformation = (gameCount, reservation) =>
       "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
       "🎲Monster stack game\n\n" +
       "▪️" + gameCount + "부▪️\n\n" +
@@ -357,9 +357,7 @@ const monsterGame = () => {
       "📢빠르고 원활한 게임진행을 위해\n" +
       "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
       reservationListToString(reservation) + "\n\n" +
-      "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요"
-    );
-  };
+      "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
 
   const reservationListToString = (reservation) => {
     let result = "";
@@ -409,14 +407,7 @@ let isDayFirst = true;
 const sitAndGoGame = () => {
   const sitAndGoReservation = gameReservation(GAME_TYPE.SIT_AND_GO);
 
-  const getGameInformation = (gameCount, reservation) => {
-    const now = new Date();
-
-    if (now.getHours() >= 20) {
-      isDayFirst = false;
-    }
-
-    return (
+  const getGameInformation = (gameCount, reservation) =>
       "🏴‍☠️Final NIne 4ㅑ로수길🏴‍☠️\n" +
       "🎲OTT -Sit & Go  \n\n" +
       "▪️" + gameCount + "부▪️\n\n" +
@@ -431,9 +422,7 @@ const sitAndGoGame = () => {
       "📢빠르고 원활한 게임진행을 위해\n" +
       "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
       reservationListToString(reservation) + "\n\n" +
-      "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요"
-    );
-  };
+      "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
 
   const reservationListToString = (reservation) => {
     let result = "";
@@ -487,8 +476,7 @@ const weeklyTournamentGame = () => {
     GAME_TYPE.WEEKLY_TOURNAMENT
   );
 
-  const getGameInformation = (gameCount, reservation) => {
-    return (
+  const getGameInformation = (gameCount, reservation) =>
       "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
       "🎲 MTT-Weekly Tournaments \n\n" +
       "⏱️ Duration - 10 min\n\n" +
@@ -505,9 +493,7 @@ const weeklyTournamentGame = () => {
       "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
       "📋예약자 명단 (최소 6포 이상)\n" +
       reservationListToString(reservation) + "\n\n" +
-      "🔳 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
-    );
-  };
+      "🔳 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
   const reservationListToString = (reservation) => {
     let result = "";
@@ -569,10 +555,10 @@ const COMMANDS = {
   SIT_AND_GO_SHORT: "!싯",
   WEEKLY_TOURNAMENT: "!주간토너먼트",
   WEEKLY_TOURNAMENT_SHORT: "!주토",
-  END_TODAY: "!이태원마감",
+  END_TODAY: "!샤로수마감",
 };
 
-const QUESTION_COMMANDS = "?이태원봇";
+const QUESTION_COMMANDS = "?샤로수봇";
 
 const isBotRoom = (room) => {
   const botRooms = [
@@ -686,7 +672,7 @@ function response(
             }
           } else {
             replier.reply(
-              "금일 이태원점 마감하였습니다!\n오늘도 방문해주신 Fit밀리분들 감사합니다\n오늘 하루도 즐겁게 보내시고 저녁에 파나에서 만나요!"
+              "금일 샤로수점 마감하였습니다!\n오늘도 방문해주신 샤밀리분들 감사합니다\n오늘 하루도 즐겁게 보내시고 저녁에 파나에서 만나요!"
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();

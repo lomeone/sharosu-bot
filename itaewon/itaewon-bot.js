@@ -1,4 +1,4 @@
-const scriptName = "itawon-bot";
+const scriptName = "itaewon-bot";
 
 const alreadyGameStartError = (gameType) => {
   const error = new Error(
@@ -69,8 +69,8 @@ const systemError = () => {
   return error;
 };
 
-// const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com";
-const RESERVATION_SERVER_URL = "http://172.30.1.19:8080";
+const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com";
+const STORE_BRANCH = "itaewon";
 
 const GAME_TYPE = {
   MONSTER: "몬스터",
@@ -83,7 +83,7 @@ const gameReservation = (gameType) => {
     const response = org.jsoup.Jsoup.connect(
       RESERVATION_SERVER_URL + "/reservation"
     )
-      .data("storeBranch", "itaewon")
+      .data("storeBranch", STORE_BRANCH)
       .data("gameType", gameType)
       .timeout(5000)
       .ignoreContentType(true)
@@ -118,7 +118,7 @@ const gameReservation = (gameType) => {
       throw notExistReserveNickname();
     }
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
       reservationUsers: Array.from(nicknames),
       reservationTime: time,
@@ -166,7 +166,7 @@ const gameReservation = (gameType) => {
       throw notExistCancelNickname();
     }
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
       cancelUsers: Array.from(nicknames),
     };
@@ -210,7 +210,7 @@ const gameReservation = (gameType) => {
 
   const closeReservation = () => {
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
     };
 
@@ -249,7 +249,7 @@ const gameReservation = (gameType) => {
 
   const openReservationNextGame = () => {
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
     };
 
@@ -298,7 +298,7 @@ const gameReservation = (gameType) => {
     const session = `${year}${month}${day}01`;
 
     const requestBody = {
-      storeBranch: "itaewon",
+      storeBranch: STORE_BRANCH,
       gameType,
       session,
     };
@@ -346,8 +346,7 @@ const gameReservation = (gameType) => {
 const monsterGame = () => {
   const monsterReservation = gameReservation(GAME_TYPE.MONSTER);
 
-  const getGameInformation = (gameCount, reservation) => {
-    return (
+  const getGameInformation = (gameCount, reservation) =>
       "✪ 𝗠 𝗢 𝗡 𝗦 𝗧 𝗘 𝗥 𝗚 𝗔 𝗠 𝗘 ✪\n\n" +
       "➜ MTT 토너먼트 (엔트리제한X)\n" +
       "➜ 300만칩 스타트 (150bb)\n" +
@@ -360,9 +359,7 @@ const monsterGame = () => {
       "🅁 예약자 명단 (최소 6포이상)\n\n" +
       reservationListToString(reservation) +
       "\n" +
-      "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
-    );
-  };
+      "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
   const reservationListToString = (reservation) => {
     let result = "";
@@ -489,8 +486,7 @@ const weeklyTournamentGame = () => {
     GAME_TYPE.WEEKLY_TOURNAMENT
   );
 
-  const getGameInformation = (gameCount, reservation) => {
-    return (
+  const getGameInformation = (gameCount, reservation) =>
       "🅆 🄴 🄴 🄺 🄻 🅈\n" +
       "🅃 🄾 🅄 🅁 🄽 🄰 🄼 🄴 🄽 🅃 🅂\n\n" +
       "➜ 일요일 20:00 시작, 스타트칩 150만\n" +
@@ -507,9 +503,7 @@ const weeklyTournamentGame = () => {
       "🅁 예약자 명단 (최소 6포 이상)\n\n" +
       reservationListToString(reservation) +
       "\n" +
-      "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
-    );
-  };
+      "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
   const reservationListToString = (reservation) => {
     let result = "";
