@@ -1,0 +1,9 @@
+sharosu-bot v2.0.0 Release Notes
+================================
+
+Fixes since  v1.1.2
+===================
+
+* New Feature
+1. 예약 관리를 Server API를 통해서 서버에서 관리할 수 있도록 구현 변경
+2. itaewon-bot 첫게임 문구 노출 조건 변경
