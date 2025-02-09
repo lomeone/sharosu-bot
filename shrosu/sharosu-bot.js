@@ -1,4 +1,4 @@
-const scriptName = "itaewon-bot";
+const scriptName = "sharosu-bot";
 
 const alreadyGameStartError = (gameType) => {
   const error = new Error(
@@ -30,11 +30,6 @@ const alreadyGameStartErrorForStaff = () => {
 
 const reservationInprogressError = () => {
   const error = new Error("단톡방에 집중하세요~!\n게임 예약진행중이에요~!");
-  return error;
-};
-
-const notRoomMasterError = () => {
-  const error = new Error("방 관리자만 사용할 수 있는 명령어입니다.");
   return error;
 };
 
@@ -70,7 +65,7 @@ const systemError = () => {
 };
 
 const RESERVATION_SERVER_URL = "https://fn-reservation.lomeone.com";
-const STORE_BRANCH = "itaewon";
+const STORE_BRANCH = "sharosu";
 
 const GAME_TYPE = {
   MONSTER: "몬스터",
@@ -319,7 +314,7 @@ const gameReservation = (gameType) => {
     if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
 
-      return reserve(["영기"], "19:00");
+      return reserve(["A3"], "19:00");
     }
 
     if (Math.floor(responseStatusCode / 100) === 4) {
@@ -347,19 +342,22 @@ const monsterGame = () => {
   const monsterReservation = gameReservation(GAME_TYPE.MONSTER);
 
   const getGameInformation = (gameCount, reservation) =>
-      "✪ 𝗠 𝗢 𝗡 𝗦 𝗧 𝗘 𝗥 𝗚 𝗔 𝗠 𝗘 ✪\n\n" +
-      "➜ MTT 토너먼트 (엔트리제한X)\n" +
-      "➜ 300만칩 스타트 (150bb)\n" +
-      "➜ 리바인 2회 (400만칩)\n" +
-      "➜ 7엔트리당 시드 10만\n" +
-      "➜ 획득시드 2만당 승점 +1점 / 바인 +1점\n\n" +
-      "-" +
-      gameCount +
-      "부-\n" +
-      "🅁 예약자 명단 (최소 6포이상)\n\n" +
-      reservationListToString(reservation) +
-      "\n" +
-      "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
+      "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
+      "🎲Monster stack game\n\n" +
+      "▪️" + gameCount + "부▪️\n\n" +
+      "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
+      "▪️7엔트리당 시드 10만\n" +
+      "◾️300만칩 시작 (150BB)\n" +
+      "▪️리바인 2회 (400만칩)\n" +
+      "◾️획득시드 2만당 몬스터 승점 1점\n" +
+      "▪️바인,리바인시 몬스터 승점 1점\n" +
+      "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
+      (gameCount == 1 ? "‼️1부 한정 얼리칩 +40‼️\n\n" : "") +
+      "❕예약자 명단 (최소 6포 이상/12포 밸런싱 )\n" +
+      "📢빠르고 원활한 게임진행을 위해\n" +
+      "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
+      reservationListToString(reservation) + "\n\n" +
+      "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
 
   const reservationListToString = (reservation) => {
     let result = "";
@@ -409,30 +407,22 @@ let isDayFirst = true;
 const sitAndGoGame = () => {
   const sitAndGoReservation = gameReservation(GAME_TYPE.SIT_AND_GO);
 
-  const getGameInformation = (gameCount, reservation) => {
-    const now = new Date();
-
-    if (now.getHours() >= 20) {
-      isDayFirst = false;
-    }
-
-    return (
-      "🅂 🄸 🅃  &  🄶 🄾\n\n" +
-      (gameCount === 1 && isDayFirst ? "🔥첫게임 2배 이벤트🔥\n\n" : "") +
-      "➜ MTT 토너먼트 (엔트리제한X)\n" +
-      "➜ 200만칩 스타트\n" +
-      "➜ 리바인 2회 (300만칩)\n" +
-      "➜ 3엔트리당 시드 1만\n" +
-      "➜ 획득시드 2만당 승점 +1점\n\n" +
-      "-" +
-      gameCount +
-      "부-\n" +
-      "🅁 예약자 명단 (최소 5포이상)\n\n" +
-      reservationListToString(reservation) +
-      "\n" +
-      "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
-    );
-  };
+  const getGameInformation = (gameCount, reservation) =>
+      "🏴‍☠️Final NIne 4ㅑ로수길🏴‍☠️\n" +
+      "🎲OTT -Sit & Go  \n\n" +
+      "▪️" + gameCount + "부▪️\n\n" +
+      "⏱️ Duration - 7 min\n\n" +
+      "🔳 최소 인원 5명 시작\n" +
+      "🔲 데일리와 바인금액 동일 / 시드1만 바인가능\n" +
+      "🔳 1등 - 3엔트리당 10,000시드\n" +
+      "🔲 1만시드당 주간 데일리 승점 +1점\n" +
+      "🔳 바인 200만칩  / 리바인2회 300만칩 \n" +
+      "🔲 최소인원 모이면 상시 진행\n\n" +
+      "📋예약자 명단(최소 5포 이상)\n" +
+      "📢빠르고 원활한 게임진행을 위해\n" +
+      "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
+      reservationListToString(reservation) + "\n\n" +
+      "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
 
   const reservationListToString = (reservation) => {
     let result = "";
@@ -487,23 +477,23 @@ const weeklyTournamentGame = () => {
   );
 
   const getGameInformation = (gameCount, reservation) =>
-      "🅆 🄴 🄴 🄺 🄻 🅈\n" +
-      "🅃 🄾 🅄 🅁 🄽 🄰 🄼 🄴 🄽 🅃 🅂\n\n" +
-      "➜ 일요일 20:00 시작, 스타트칩 150만\n" +
-      "➜ 바인 15,000원, 리바인 2회 200만칩\n" +
-      "➜ 시드바인 가능 , 포인트바인 불가\n\n" +
-      "  ★예약 Event ★\n" +
+      "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
+      "🎲 MTT-Weekly Tournaments \n\n" +
+      "⏱️ Duration - 10 min\n\n" +
+      "◾️일요일 20:00 시작, 스타트칩 150만\n" +
+      "▪️바인 15,000원, 리바인 2회 200만칩\n" +
+      "◾️시드바인 가능 , 포인트바인 불가\n\n" +
+      "▪️예약 Event▪️\n" +
       "3레벨 이전 사전 예약 참가자들께는\n" +
       "기존 150만칩+ 50만칩\n" +
-      "(총 200만칩 제공)\n" +
-      "▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁\n" +
+      "(총 200만칩 제공)\n\n" +
+      "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
       "•1등: 온라인 토너먼트 참여권 지급\n" +
-      "•바인 인원에 따라 시드 차등 지급\n" +
-      "▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔\n" +
-      "🅁 예약자 명단 (최소 6포 이상)\n\n" +
-      reservationListToString(reservation) +
-      "\n" +
-      "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
+      "•바인 인원에 따라 시드 차등지급\n" +
+      "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
+      "📋예약자 명단 (최소 6포 이상)\n" +
+      reservationListToString(reservation) + "\n\n" +
+      "🔳 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
   const reservationListToString = (reservation) => {
     let result = "";
@@ -565,30 +555,21 @@ const COMMANDS = {
   SIT_AND_GO_SHORT: "!싯",
   WEEKLY_TOURNAMENT: "!주간토너먼트",
   WEEKLY_TOURNAMENT_SHORT: "!주토",
-  END_TODAY: "!이태원마감",
+  END_TODAY: "!샤로수마감",
 };
 
-const QUESTION_COMMANDS = "?이태원봇";
-
-const ROOM_MASTER_COMMANDS = {
-  MANAGE_STAFF: "!직원",
-};
+const QUESTION_COMMANDS = "?샤로수봇";
 
 const isBotRoom = (room) => {
   const botRooms = [
-    "파이널나인 이태원점",
-    "이태원봇 테스트",
-    "파이널나인 이태원점 봇관리방",
+    "파이널나인 샤로수길점",
+    "파이널나인 샤로수길점 테스트",
   ];
   return botRooms.includes(room);
 };
 
 const isCommand = (command) => {
   return Object.values(COMMANDS).includes(command);
-};
-
-const isRoomMasterCommand = (command) => {
-  return Object.values(ROOM_MASTER_COMMANDS).includes(command);
 };
 
 const generateReservationValue = (value) => {
@@ -606,28 +587,8 @@ const generateReservationValue = (value) => {
   return { nicknames, time };
 };
 
-const isRoomMaster = (sender) => {
-  return (
-    sender === "파이널나인 이태원대장 영기" ||
-    sender === "박재형" ||
-    sender === "컴테"
-  );
-};
-
-const isNotRoomMaster = (sender) => {
-  return !isRoomMaster(sender);
-};
-
-const checkRoomMaster = (sender) => {
-  if (isNotRoomMaster(sender)) {
-    throw notRoomMasterError();
-  }
-};
-
-const staffList = new Set();
-
 const isStaff = (sender) => {
-  return isRoomMaster(sender) || staffList.has(sender);
+  return sender.includes("샤로수길점 대표") || sender.includes("(Manager)") || sender.includes("(STAFF)");
 };
 
 const isNotStaff = (sender) => {
@@ -639,16 +600,6 @@ const checkStaff = (sender) => {
     throw notStaffError();
   }
 };
-
-const addStaff = (nickname) => {
-  staffList.add(nickname);
-};
-
-const removeStaff = (nickname) => {
-  staffList.delete(nickname);
-};
-
-const getStaffList = () => "직원명단: " + Array.from(staffList).join(", ");
 
 function response(
   room,
@@ -721,7 +672,7 @@ function response(
             }
           } else {
             replier.reply(
-              "금일 이태원점 마감하였습니다!\n오늘도 방문해주신 Fit밀리분들 감사합니다\n오늘 하루도 즐겁게 보내시고 저녁에 파나에서 만나요!"
+              "금일 샤로수점 마감하였습니다!\n오늘도 방문해주신 샤밀리분들 감사합니다\n오늘 하루도 즐겁게 보내시고 저녁에 파나에서 만나요!"
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();
@@ -745,22 +696,6 @@ function response(
             "아직 예약방법 이외의 다른 질문은 답변을 못드려요ㅠㅠ\n" +
               "다른 질문도 받을 수 있도록 계속 발전해볼게요!"
           );
-        }
-      } else if (isRoomMasterCommand(msgTokenizer[0])) {
-        checkRoomMaster(sender);
-        if (msgTokenizer[0] === ROOM_MASTER_COMMANDS.MANAGE_STAFF) {
-          const command = msgTokenizer[1];
-          if (command === "등록") {
-            addStaff(msgTokenizer[2]);
-            replier.reply(getStaffList());
-          } else if (command === "해제") {
-            removeStaff(msgTokenizer[2]);
-            replier.reply(getStaffList());
-          } else if (command === "명단") {
-            replier.reply(getStaffList());
-          } else {
-            throw commandSyntaxError();
-          }
         }
       }
     } catch (error) {
