@@ -652,7 +652,9 @@ function response(
         if (msgTokenizer[0] === COMMANDS.RESERVATION_LIST) {
           try {
             replier.reply(monsterGame().getGameInformation());
-          } catch (error) {}
+          } catch (error) {
+            replier.reply(error.message);
+          }
           try {
             replier.reply(sitAndGoGame().getGameInformation());
           } catch (error) {
