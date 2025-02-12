@@ -302,7 +302,7 @@ const gameReservation = (gameType) => {
     };
 
     const response = reservationServiceApiCall(
-      "/reservation/close",
+      "/reservation/start",
       org.jsoup.Connection.Method.POST,
       requestBody
     );
