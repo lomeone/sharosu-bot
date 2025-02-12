@@ -85,7 +85,7 @@ const gameReservation = (gameType) => {
     )
       .data("storeBranch", STORE_BRANCH)
       .data("gameType", gameType)
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .method(org.jsoup.Connection.Method.GET)
       .execute();
@@ -129,7 +129,7 @@ const gameReservation = (gameType) => {
     )
       .header("Content-Type", "application/json")
       .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(org.jsoup.Connection.Method.POST)
@@ -176,7 +176,7 @@ const gameReservation = (gameType) => {
     )
       .header("Content-Type", "application/json")
       .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(org.jsoup.Connection.Method.POST)
@@ -219,7 +219,7 @@ const gameReservation = (gameType) => {
     )
       .header("Content-Type", "application/json")
       .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(org.jsoup.Connection.Method.POST)
@@ -258,7 +258,7 @@ const gameReservation = (gameType) => {
     )
       .header("Content-Type", "application/json")
       .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(org.jsoup.Connection.Method.POST)
@@ -308,7 +308,7 @@ const gameReservation = (gameType) => {
     )
       .header("Content-Type", "application/json")
       .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(org.jsoup.Connection.Method.POST)
@@ -419,7 +419,7 @@ const sitAndGoGame = () => {
     return (
       "🅂 🄸 🅃  &  🄶 🄾\n\n" +
       (gameCount === 1 && isDayFirst ? "🔥첫게임 2배 이벤트🔥\n\n" : "") +
-      "➜ MTT 토너먼트 (엔트리제한X)\n" +
+      "➜ OTT 토너먼트 (엔트리제한X)\n" +
       "➜ 200만칩 스타트\n" +
       "➜ 리바인 2회 (300만칩)\n" +
       "➜ 3엔트리당 시드 1만\n" +
@@ -664,9 +664,16 @@ function response(
     try {
       if (isCommand(msgTokenizer[0])) {
         if (msgTokenizer[0] === COMMANDS.RESERVATION_LIST) {
-          replier.reply(monsterGame().getGameInformation());
-          replier.reply(sitAndGoGame().getGameInformation());
-          replier.reply(weeklyTournamentGame().getGameInformation());
+          try {
+            replier.reply(monsterGame().getGameInformation());
+          } catch (error) {
+          }
+          try {
+            replier.reply(sitAndGoGame().getGameInformation());
+          } catch (error) {
+            replier.reply(error.message);
+          }
+          // replier.reply(weeklyTournamentGame().getGameInformation());
         } else {
           let game;
           switch (msgTokenizer[0]) {
