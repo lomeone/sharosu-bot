@@ -346,12 +346,9 @@ const monsterGame = () => {
     "➜ 리바인 2회 (400만칩)\n" +
     "➜ 7엔트리당 시드 10만\n" +
     "➜ 획득시드 2만당 승점 +1점 / 바인 +1점\n\n" +
-    "-" +
-    gameCount +
-    "부-\n" +
+    "-" + gameCount + "부-\n" +
     "🅁 예약자 명단 (최소 6포이상)\n\n" +
-    reservationListToString(reservation) +
-    "\n" +
+    reservationListToString(reservation) + "\n" +
     "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
   const reservationListToString = (reservation) => {
@@ -417,12 +414,9 @@ const sitAndGoGame = () => {
       "➜ 리바인 2회 (300만칩)\n" +
       "➜ 3엔트리당 시드 1만\n" +
       "➜ 획득시드 2만당 승점 +1점\n\n" +
-      "-" +
-      gameCount +
-      "부-\n" +
+      "-" + gameCount + "부-\n" +
       "🅁 예약자 명단 (최소 5포이상)\n\n" +
-      reservationListToString(reservation) +
-      "\n" +
+      reservationListToString(reservation) + "\n" +
       "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다"
     );
   };
@@ -494,8 +488,7 @@ const weeklyTournamentGame = () => {
     "•바인 인원에 따라 시드 차등 지급\n" +
     "▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔\n" +
     "🅁 예약자 명단 (최소 6포 이상)\n\n" +
-    reservationListToString(reservation) +
-    "\n" +
+    reservationListToString(reservation) + "\n" +
     "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
   const reservationListToString = (reservation) => {
@@ -706,10 +699,7 @@ function response(
                 checkStaff(sender);
                 game.openReservationNextGame();
                 replier.reply(game.getGameInformation());
-              } else if (
-                msgTokenizer[1] === "예약마감" ||
-                msgTokenizer[1] === "마감"
-              ) {
+              } else if (msgTokenizer[1] === "예약마감" || msgTokenizer[1] === "마감") {
                 checkStaff(sender);
                 game.closeReservation();
                 replier.reply(
