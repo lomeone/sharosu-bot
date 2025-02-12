@@ -73,17 +73,35 @@ const GAME_TYPE = {
   WEEKLY_TOURNAMENT: "주간토너먼트",
 };
 
+const reservationServiceApiCall = (path, method, requestBody) => {
+  const response = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
+    .header("Content-Type", "application/json")
+    .timeout(10000)
+    .ignoreContentType(true)
+    .ignoreHttpErrors(true)
+    .method(method);
+
+  try {
+    return method === org.jsoup.Connection.Method.POST
+      ? response.requestBody(JSON.stringify(requestBody)).execute()
+      : response.data(requestBody).execute();
+  } catch (error) {
+    throw systemError();
+  }
+};
+
 const gameReservation = (gameType) => {
   const getReservationInfo = () => {
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation"
-    )
-      .data("storeBranch", STORE_BRANCH)
-      .data("gameType", gameType)
-      .timeout(5000)
-      .ignoreContentType(true)
-      .method(org.jsoup.Connection.Method.GET)
-      .execute();
+    const requestBody = {
+      storeBranch: STORE_BRANCH,
+      gameType,
+    };
+
+    const response = reservationServiceApiCall(
+      "/reservation",
+      org.jsoup.Connection.Method.GET,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -119,16 +137,11 @@ const gameReservation = (gameType) => {
       reservationTime: time,
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -166,16 +179,11 @@ const gameReservation = (gameType) => {
       cancelUsers: Array.from(nicknames),
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation/cancel"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation/cancel",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -209,16 +217,11 @@ const gameReservation = (gameType) => {
       gameType,
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation/close"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation/close",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -248,16 +251,11 @@ const gameReservation = (gameType) => {
       gameType,
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation/start"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation/start",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -298,16 +296,11 @@ const gameReservation = (gameType) => {
       session,
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation/start"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation/close",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
