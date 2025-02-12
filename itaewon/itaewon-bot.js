@@ -680,10 +680,7 @@ function response(
 
           if (game !== undefined) {
             if (msgTokenizer[1]) {
-              if (
-                msgTokenizer[1] === "예약" ||
-                msgTokenizer[1] === "예약취소"
-              ) {
+              if (msgTokenizer[1] === "예약" || msgTokenizer[1] === "예약취소") {
                 const { nicknames, time } = generateReservationValue(
                   msg.slice(msgTokenizer[0].length + msgTokenizer[1].length + 2)
                 );

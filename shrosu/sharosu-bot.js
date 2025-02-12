@@ -609,9 +609,15 @@ function response(
     try {
       if (isCommand(msgTokenizer[0])) {
         if (msgTokenizer[0] === COMMANDS.RESERVATION_LIST) {
-          replier.reply(monsterGame().getGameInformation());
-          replier.reply(sitAndGoGame().getGameInformation());
-          replier.reply(weeklyTournamentGame().getGameInformation());
+          try {
+            replier.reply(monsterGame().getGameInformation());
+          } catch (error) {}
+          try {
+            replier.reply(sitAndGoGame().getGameInformation());
+          } catch (error) {
+            replier.reply(error.message);
+          }
+          // replier.reply(weeklyTournamentGame().getGameInformation());
         } else {
           let game;
           switch (msgTokenizer[0]) {
