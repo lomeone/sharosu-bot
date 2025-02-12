@@ -355,15 +355,15 @@ const monsterGame = () => {
   const reservationListToString = (reservation) => {
     let result = "";
     for ([nickname, time] of reservation) {
-      result += "★ " + nickname + " " + time + "\n";
+      result += "◾️ " + nickname + " " + time + "\n";
     }
 
     if (reservation.length >= 10) {
-      result += "★ \n★ \n";
+      result += "◾️ \n◾️ \n";
     } else {
       const repeatCount = 10 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
-        result += "★ \n";
+        result += "◾️ \n";
       }
     }
 
@@ -421,15 +421,15 @@ const sitAndGoGame = () => {
     let result = "";
 
     for ([nickname, time] of reservation) {
-      result += "★ " + nickname + " " + time + "\n";
+      result += "◾️ " + nickname + " " + time + "\n";
     }
 
     if (reservation.length >= 10) {
-      result += "★ \n★ \n";
+      result += "◾️ \n◾️ \n";
     } else {
       const repeatCount = 10 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
-        result += "★ \n";
+        result += "◾️ \n";
       }
     }
 
@@ -493,18 +493,18 @@ const weeklyTournamentGame = () => {
     let reservationCount = 0;
 
     for ([nickname, time] of reservation) {
-      result += "★ " + nickname + "\n";
+      result += "◾️ " + nickname + "\n";
       if (++reservationCount % 10 === 0) {
         result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
       }
     }
 
     if (reservation.length >= 20) {
-      result += "★ \n★ \n";
+      result += "◾️ \n◾️ \n";
     } else {
       const repeatCount = 20 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
-        result += "★ \n";
+        result += "◾️ \n";
         if (++reservationCount % 10 === 0) {
           result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
         }
