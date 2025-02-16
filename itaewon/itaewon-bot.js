@@ -716,7 +716,7 @@ function response(
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();
-            if (new Date().getDay() === 1) {
+            if (new Date().getDay() === 0) {
               weeklyTournamentGame().endToday();
             }
           }
