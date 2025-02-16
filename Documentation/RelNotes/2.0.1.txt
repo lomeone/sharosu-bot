@@ -1,0 +1,11 @@
+sharosu-bot v2.0.0 Release Notes
+================================
+
+Fixes since  v2.0.0
+===================
+
+* Hot Fixed
+1. 하루 마감되지 않는 버그 수정(Api path가 잘못되어 있던 critical issue)
+
+* Bug Fixed
+1. weekly tournament 예약창 생성 조건을 월요일 아침 마감에서 일요일 아침 마감으로 변경
