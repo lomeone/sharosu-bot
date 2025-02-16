@@ -73,17 +73,35 @@ const GAME_TYPE = {
   WEEKLY_TOURNAMENT: "주간토너먼트",
 };
 
+const reservationServiceApiCall = (path, method, requestBody) => {
+  const response = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
+    .header("Content-Type", "application/json")
+    .timeout(10000)
+    .ignoreContentType(true)
+    .ignoreHttpErrors(true)
+    .method(method);
+
+  try {
+    return method === org.jsoup.Connection.Method.POST
+      ? response.requestBody(JSON.stringify(requestBody)).execute()
+      : response.data(requestBody).execute();
+  } catch (error) {
+    throw systemError();
+  }
+};
+
 const gameReservation = (gameType) => {
   const getReservationInfo = () => {
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation"
-    )
-      .data("storeBranch", STORE_BRANCH)
-      .data("gameType", gameType)
-      .timeout(5000)
-      .ignoreContentType(true)
-      .method(org.jsoup.Connection.Method.GET)
-      .execute();
+    const requestBody = {
+      storeBranch: STORE_BRANCH,
+      gameType,
+    };
+
+    const response = reservationServiceApiCall(
+      "/reservation",
+      org.jsoup.Connection.Method.GET,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -119,16 +137,11 @@ const gameReservation = (gameType) => {
       reservationTime: time,
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -166,16 +179,11 @@ const gameReservation = (gameType) => {
       cancelUsers: Array.from(nicknames),
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation/cancel"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation/cancel",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -209,16 +217,11 @@ const gameReservation = (gameType) => {
       gameType,
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation/close"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation/close",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -248,16 +251,11 @@ const gameReservation = (gameType) => {
       gameType,
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation/start"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation/start",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -298,16 +296,11 @@ const gameReservation = (gameType) => {
       session,
     };
 
-    const response = org.jsoup.Jsoup.connect(
-      RESERVATION_SERVER_URL + "/reservation/start"
-    )
-      .header("Content-Type", "application/json")
-      .requestBody(JSON.stringify(requestBody))
-      .timeout(5000)
-      .ignoreContentType(true)
-      .ignoreHttpErrors(true)
-      .method(org.jsoup.Connection.Method.POST)
-      .execute();
+    const response = reservationServiceApiCall(
+      "/reservation/start",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
 
     const responseStatusCode = response.statusCode();
 
@@ -342,35 +335,35 @@ const monsterGame = () => {
   const monsterReservation = gameReservation(GAME_TYPE.MONSTER);
 
   const getGameInformation = (gameCount, reservation) =>
-      "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
-      "🎲Monster stack game\n\n" +
-      "▪️" + gameCount + "부▪️\n\n" +
-      "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
-      "▪️7엔트리당 시드 10만\n" +
-      "◾️300만칩 시작 (150BB)\n" +
-      "▪️리바인 2회 (400만칩)\n" +
-      "◾️획득시드 2만당 몬스터 승점 1점\n" +
-      "▪️바인,리바인시 몬스터 승점 1점\n" +
-      "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
-      (gameCount == 1 ? "‼️1부 한정 얼리칩 +40‼️\n\n" : "") +
-      "❕예약자 명단 (최소 6포 이상/12포 밸런싱 )\n" +
-      "📢빠르고 원활한 게임진행을 위해\n" +
-      "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
-      reservationListToString(reservation) + "\n\n" +
-      "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
+    "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
+    "🎲Monster stack game\n\n" +
+    "▪️" + gameCount + "부▪️\n\n" +
+    "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
+    "▪️7엔트리당 시드 10만\n" +
+    "◾️300만칩 시작 (150BB)\n" +
+    "▪️리바인 2회 (400만칩)\n" +
+    "◾️획득시드 2만당 몬스터 승점 1점\n" +
+    "▪️바인,리바인시 몬스터 승점 1점\n" +
+    "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
+    (gameCount == 1 ? "‼️1부 한정 얼리칩 +40‼️\n\n" : "") +
+    "❕예약자 명단 (최소 6포 이상/12포 밸런싱 )\n" +
+    "📢빠르고 원활한 게임진행을 위해\n" +
+    "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
+    reservationListToString(reservation) + "\n" +
+    "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
 
   const reservationListToString = (reservation) => {
     let result = "";
     for ([nickname, time] of reservation) {
-      result += "★ " + nickname + " " + time + "\n";
+      result += "◾️ " + nickname + " " + time + "\n";
     }
 
     if (reservation.length >= 10) {
-      result += "★ \n★ \n";
+      result += "◾️ \n◾️ \n";
     } else {
       const repeatCount = 10 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
-        result += "★ \n";
+        result += "◾️ \n";
       }
     }
 
@@ -408,35 +401,35 @@ const sitAndGoGame = () => {
   const sitAndGoReservation = gameReservation(GAME_TYPE.SIT_AND_GO);
 
   const getGameInformation = (gameCount, reservation) =>
-      "🏴‍☠️Final NIne 4ㅑ로수길🏴‍☠️\n" +
-      "🎲OTT -Sit & Go  \n\n" +
-      "▪️" + gameCount + "부▪️\n\n" +
-      "⏱️ Duration - 7 min\n\n" +
-      "🔳 최소 인원 5명 시작\n" +
-      "🔲 데일리와 바인금액 동일 / 시드1만 바인가능\n" +
-      "🔳 1등 - 3엔트리당 10,000시드\n" +
-      "🔲 1만시드당 주간 데일리 승점 +1점\n" +
-      "🔳 바인 200만칩  / 리바인2회 300만칩 \n" +
-      "🔲 최소인원 모이면 상시 진행\n\n" +
-      "📋예약자 명단(최소 5포 이상)\n" +
-      "📢빠르고 원활한 게임진행을 위해\n" +
-      "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
-      reservationListToString(reservation) + "\n\n" +
-      "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
+    "🏴‍☠️Final NIne 4ㅑ로수길🏴‍☠️\n" +
+    "🎲OTT -Sit & Go  \n\n" +
+    "▪️" + gameCount + "부▪️\n\n" +
+    "⏱️ Duration - 7 min\n\n" +
+    "🔳 최소 인원 5명 시작\n" +
+    "🔲 데일리와 바인금액 동일 / 시드1만 바인가능\n" +
+    "🔳 1등 - 3엔트리당 10,000시드\n" +
+    "🔲 1만시드당 주간 데일리 승점 +1점\n" +
+    "🔳 바인 200만칩  / 리바인2회 300만칩 \n" +
+    "🔲 최소인원 모이면 상시 진행\n\n" +
+    "📋예약자 명단(최소 5포 이상)\n" +
+    "📢빠르고 원활한 게임진행을 위해\n" +
+    "예약시 방문예정 시간대를 함께 기재 부탁드립니다\n\n" +
+    reservationListToString(reservation) + "\n" +
+    "⬛️ 문의사항은 핑크왕관에게 1:1톡 주세요";
 
   const reservationListToString = (reservation) => {
     let result = "";
 
     for ([nickname, time] of reservation) {
-      result += "★ " + nickname + " " + time + "\n";
+      result += "◾️ " + nickname + " " + time + "\n";
     }
 
     if (reservation.length >= 10) {
-      result += "★ \n★ \n";
+      result += "◾️ \n◾️ \n";
     } else {
       const repeatCount = 10 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
-        result += "★ \n";
+        result += "◾️ \n";
       }
     }
 
@@ -477,41 +470,41 @@ const weeklyTournamentGame = () => {
   );
 
   const getGameInformation = (gameCount, reservation) =>
-      "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
-      "🎲 MTT-Weekly Tournaments \n\n" +
-      "⏱️ Duration - 10 min\n\n" +
-      "◾️일요일 20:00 시작, 스타트칩 150만\n" +
-      "▪️바인 15,000원, 리바인 2회 200만칩\n" +
-      "◾️시드바인 가능 , 포인트바인 불가\n\n" +
-      "▪️예약 Event▪️\n" +
-      "3레벨 이전 사전 예약 참가자들께는\n" +
-      "기존 150만칩+ 50만칩\n" +
-      "(총 200만칩 제공)\n\n" +
-      "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
-      "•1등: 온라인 토너먼트 참여권 지급\n" +
-      "•바인 인원에 따라 시드 차등지급\n" +
-      "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
-      "📋예약자 명단 (최소 6포 이상)\n" +
-      reservationListToString(reservation) + "\n\n" +
-      "🔳 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
+    "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
+    "🎲 MTT-Weekly Tournaments \n\n" +
+    "⏱️ Duration - 10 min\n\n" +
+    "◾️일요일 20:00 시작, 스타트칩 150만\n" +
+    "▪️바인 15,000원, 리바인 2회 200만칩\n" +
+    "◾️시드바인 가능 , 포인트바인 불가\n\n" +
+    "▪️예약 Event▪️\n" +
+    "3레벨 이전 사전 예약 참가자들께는\n" +
+    "기존 150만칩+ 50만칩\n" +
+    "(총 200만칩 제공)\n\n" +
+    "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
+    "•1등: 온라인 토너먼트 참여권 지급\n" +
+    "•바인 인원에 따라 시드 차등지급\n" +
+    "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
+    "📋예약자 명단 (최소 6포 이상)\n" +
+    reservationListToString(reservation) + "\n" +
+    "🔳 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
   const reservationListToString = (reservation) => {
     let result = "";
     let reservationCount = 0;
 
     for ([nickname, time] of reservation) {
-      result += "★ " + nickname + "\n";
+      result += "◾️ " + nickname + "\n";
       if (++reservationCount % 10 === 0) {
         result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
       }
     }
 
     if (reservation.length >= 20) {
-      result += "★ \n★ \n";
+      result += "◾️ \n◾️ \n";
     } else {
       const repeatCount = 20 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
-        result += "★ \n";
+        result += "◾️ \n";
         if (++reservationCount % 10 === 0) {
           result += "🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰🟰\n";
         }
@@ -561,10 +554,7 @@ const COMMANDS = {
 const QUESTION_COMMANDS = "?샤로수봇";
 
 const isBotRoom = (room) => {
-  const botRooms = [
-    "파이널나인 샤로수길점",
-    "파이널나인 샤로수길점 테스트",
-  ];
+  const botRooms = ["파이널나인 샤로수길점", "파이널나인 샤로수길점 테스트"];
   return botRooms.includes(room);
 };
 
@@ -588,7 +578,11 @@ const generateReservationValue = (value) => {
 };
 
 const isStaff = (sender) => {
-  return sender.includes("샤로수길점 대표") || sender.includes("(Manager)") || sender.includes("(STAFF)");
+  return (
+    sender.includes("샤로수길점 대표") ||
+    sender.includes("(Manager)") ||
+    sender.includes("(STAFF)")
+  );
 };
 
 const isNotStaff = (sender) => {
@@ -615,9 +609,17 @@ function response(
     try {
       if (isCommand(msgTokenizer[0])) {
         if (msgTokenizer[0] === COMMANDS.RESERVATION_LIST) {
-          replier.reply(monsterGame().getGameInformation());
-          replier.reply(sitAndGoGame().getGameInformation());
-          replier.reply(weeklyTournamentGame().getGameInformation());
+          try {
+            replier.reply(monsterGame().getGameInformation());
+          } catch (error) {
+            replier.reply(error.message);
+          }
+          try {
+            replier.reply(sitAndGoGame().getGameInformation());
+          } catch (error) {
+            replier.reply(error.message);
+          }
+          // replier.reply(weeklyTournamentGame().getGameInformation());
         } else {
           let game;
           switch (msgTokenizer[0]) {
@@ -636,14 +638,14 @@ function response(
             default:
               break;
           }
-  
+
           if (game !== undefined) {
             if (msgTokenizer[1]) {
               if (msgTokenizer[1] === "예약" || msgTokenizer[1] === "예약취소") {
                 const { nicknames, time } = generateReservationValue(
                   msg.slice(msgTokenizer[0].length + msgTokenizer[1].length + 2)
                 );
-  
+
                 if (msgTokenizer[1] === "예약") {
                   replier.reply(game.reserve(nicknames, time));
                 } else {
@@ -655,10 +657,7 @@ function response(
                 checkStaff(sender);
                 game.openReservationNextGame();
                 replier.reply(game.getGameInformation());
-              } else if (
-                msgTokenizer[1] === "예약마감" ||
-                msgTokenizer[1] === "마감"
-              ) {
+              } else if (msgTokenizer[1] === "예약마감" || msgTokenizer[1] === "마감") {
                 checkStaff(sender);
                 game.closeReservation();
                 replier.reply(
@@ -676,7 +675,7 @@ function response(
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();
-            if (new Date().getDay() === 1) {
+            if (new Date().getDay() === 0) {
               weeklyTournamentGame().endToday();
             }
           }
