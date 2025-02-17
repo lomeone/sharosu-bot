@@ -74,20 +74,28 @@ const GAME_TYPE = {
 };
 
 const reservationServiceApiCall = (path, method, requestBody) => {
-  const response = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
+  const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
     .header("Content-Type", "application/json")
-    .timeout(10000)
+    .timeout(5000)
     .ignoreContentType(true)
     .ignoreHttpErrors(true)
     .method(method);
 
-  try {
-    return method === org.jsoup.Connection.Method.POST
-      ? response.requestBody(JSON.stringify(requestBody)).execute()
-      : response.data(requestBody).execute();
-  } catch (error) {
-    throw systemError();
+  let attempt = 0;
+  let response = null;
+  while (attempt < 5 && response === null) {
+    try {
+      response = method === org.jsoup.Connection.Method.POST
+        ? jsoupConnect.requestBody(JSON.stringify(requestBody)).execute()
+        : jsoupConnect.data(requestBody).execute();
+    } catch (error) {
+      attempt++;
+      if (attempt >= 5) {
+        throw systemError();
+      }
+    }
   }
+  return response;
 };
 
 const gameReservation = (gameType) => {
