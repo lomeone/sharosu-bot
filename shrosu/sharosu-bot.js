@@ -166,7 +166,7 @@ const gameReservation = (gameType) => {
       const errorData = JSON.parse(response.body());
 
       if (errorData.errorCode === "reservation/closed") {
-        throw alreadyGameStartError();
+        throw alreadyGameStartError(gameType);
       }
 
       if (errorData.errorCode === "reservation/not-found") {
