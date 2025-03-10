@@ -79,20 +79,28 @@ const GAME_TYPE = {
 };
 
 const reservationServiceApiCall = (path, method, requestBody) => {
-  const response = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
+  const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
     .header("Content-Type", "application/json")
-    .timeout(10000)
+    .timeout(5000)
     .ignoreContentType(true)
     .ignoreHttpErrors(true)
     .method(method);
 
-  try {
-    return method === org.jsoup.Connection.Method.POST
-      ? response.requestBody(JSON.stringify(requestBody)).execute()
-      : response.data(requestBody).execute();
-  } catch (error) {
-    throw systemError();
+  let attempt = 0;
+  let response = null;
+  while (attempt < 5 && response === null) {
+    try {
+      response = method === org.jsoup.Connection.Method.POST
+        ? jsoupConnect.requestBody(JSON.stringify(requestBody)).execute()
+        : jsoupConnect.data(requestBody).execute();
+    } catch (error) {
+      attempt++;
+      if (attempt >= 5) {
+        throw systemError();
+      }
+    }
   }
+  return response;
 };
 
 const gameReservation = (gameType) => {
@@ -163,7 +171,7 @@ const gameReservation = (gameType) => {
       const errorData = JSON.parse(response.body());
 
       if (errorData.errorCode === "reservation/closed") {
-        throw alreadyGameStartError();
+        throw alreadyGameStartError(gameType);
       }
 
       if (errorData.errorCode === "reservation/not-found") {
@@ -592,6 +600,33 @@ const generateReservationValue = (value) => {
   return { nicknames, time };
 };
 
+const MANAGEMENT_SERVICE_URL = "https://fn-reservation.lomeone.com";
+
+const managementServiceApiCall = (path, method, requestBody) => {
+  const jsoupConnect = org.jsoup.Jsoup.connect(MANAGEMENT_SERVICE_URL + path)
+    .header("Content-Type", "application/json")
+    .timeout(5000)
+    .ignoreContentType(true)
+    .ignoreHttpErrors(true)
+    .method(method);
+
+  let attempt = 0;
+  let response = null;
+  while (attempt < 5 && response === null) {
+    try {
+      response = method === org.jsoup.Connection.Method.POST
+        ? jsoupConnect.requestBody(JSON.stringify(requestBody)).execute()
+        : jsoupConnect.data(requestBody).execute();
+    } catch (error) {
+      attempt++;
+      if (attempt >= 5) {
+        throw systemError();
+      }
+    }
+  }
+  return response;
+};
+
 const isRoomMaster = (sender) => {
   return (
     sender === "파이널나인 이태원대장 영기" ||
@@ -610,10 +645,83 @@ const checkRoomMaster = (sender) => {
   }
 };
 
-const staffList = new Set();
+const staffManagement = () => {
+  const getStaffs = () => {
+    const requestBody = {
+      storeBranch: STORE_BRANCH
+    };
+
+    const response = managementServiceApiCall(
+      "/staff",
+      org.jsoup.Connection.Method.GET,
+      requestBody
+    );
+
+    const responseStatusCode = response.statusCode();
+
+    if (responseStatusCode === 200) {
+      const data = JSON.parse(response.body());
+      return data.staffs;
+    }
+
+    throw systemError();
+  };
+
+  const registerStaff = (nickname) => {
+    const requestBody = {
+      storeBranch: STORE_BRANCH,
+      name: nickname
+    };
+
+    const response = managementServiceApiCall(
+      "/staff",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
+
+    if (response.statusCode() === 200) {
+      return getStaffs();
+    }
+
+    throw systemError();
+  };
+
+  const deactivateStaff = (nickname) => {
+    const requestBody = {
+      storeBranch: STORE_BRANCH,
+      name: nickname
+    };
+
+    const response = managementServiceApiCall(
+      "/staff/deactivate",
+      org.jsoup.Connection.Method.POST,
+      requestBody
+    );
+
+    const responseStatusCode = response.statusCode();
+
+    if (responseStatusCode === 200) {
+      return getStaffs();
+    }
+
+    if (responseStatusCode === 404) {
+      throw Error("직원으로 등록되지 않은 닉네임입니다.");
+    }
+
+    throw systemError();
+  };
+
+  return {
+    getStaffs,
+    registerStaff,
+    deactivateStaff
+  };
+};
 
 const isStaff = (sender) => {
-  return isRoomMaster(sender) || staffList.has(sender);
+  const staffs = new Set(staffManagement().getStaffs());
+
+  return isRoomMaster(sender) || staffs.has(sender);
 };
 
 const isNotStaff = (sender) => {
@@ -626,15 +734,7 @@ const checkStaff = (sender) => {
   }
 };
 
-const addStaff = (nickname) => {
-  staffList.add(nickname);
-};
-
-const removeStaff = (nickname) => {
-  staffList.delete(nickname);
-};
-
-const getStaffList = () => "직원명단: " + Array.from(staffList).join(", ");
+const getStaffList = (staffs) => "직원명단: " + Array.from(staffs).join(", ");
 
 function response(
   room,
@@ -716,7 +816,7 @@ function response(
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();
-            if (new Date().getDay() === 0) {
+            if (new Date().getDay() === 1) {
               weeklyTournamentGame().endToday();
             }
           }
@@ -742,13 +842,11 @@ function response(
         if (msgTokenizer[0] === ROOM_MASTER_COMMANDS.MANAGE_STAFF) {
           const command = msgTokenizer[1];
           if (command === "등록") {
-            addStaff(msgTokenizer[2]);
-            replier.reply(getStaffList());
+            replier.reply(getStaffList(staffManagement().registerStaff(msgTokenizer[2])));
           } else if (command === "해제") {
-            removeStaff(msgTokenizer[2]);
-            replier.reply(getStaffList());
+            replier.reply(getStaffList(staffManagement().deactivateStaff(msgTokenizer[2])));
           } else if (command === "명단") {
-            replier.reply(getStaffList());
+            replier.reply(getStaffList(staffManagement().getStaffs()));
           } else {
             throw commandSyntaxError();
           }

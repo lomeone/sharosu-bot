@@ -1,0 +1,12 @@
+sharosu-bot v2.0.0 Release Notes
+================================
+
+Fixes since  v2.0.1
+===================
+
+* New Feature
+1. 직원 관리를 API를 통해 서버에서 관리하도록 기능 추가
+
+* Bug Fixed
+1. Api call retry를 추가하여 api call 안정성 증가
+2. 주간 토너먼트 월요일 마감시 생성되도록 재수정
