@@ -1,0 +1,8 @@
+sharosu-bot v2.1.2 Release Notes
+================================
+
+Fixes since  v2.1.0
+===================
+
+* Bug Fixed
+1. Jsoup 객체를 while문 안으로 넣어 refresh 되도록 수정
