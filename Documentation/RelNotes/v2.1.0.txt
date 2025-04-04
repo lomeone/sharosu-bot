@@ -1,4 +1,4 @@
-sharosu-bot v2.0.0 Release Notes
+sharosu-bot v2.1.0 Release Notes
 ================================
 
 Fixes since  v2.0.1
