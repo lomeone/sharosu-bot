@@ -57,7 +57,7 @@ const reservationNotFoundError = (gameType) => {
 
 const duplicateReservationSessionError = () => {
   const error = new Error(
-    "이이 예약을 진행했던 세션이에요\n관리자에게 문의해주세요"
+    "이미 예약을 진행했던 세션이에요\n관리자에게 문의해주세요"
   );
   return error;
 };
@@ -79,17 +79,17 @@ const GAME_TYPE = {
 };
 
 const reservationServiceApiCall = (path, method, requestBody) => {
-  const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
-    .header("Content-Type", "application/json")
-    .timeout(5000)
-    .ignoreContentType(true)
-    .ignoreHttpErrors(true)
-    .method(method);
-
   let attempt = 0;
   let response = null;
   while (attempt < 5 && response === null) {
     try {
+      const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
+      .header("Content-Type", "application/json")
+      .timeout(5000)
+      .ignoreContentType(true)
+      .ignoreHttpErrors(true)
+      .method(method);
+
       response = method === org.jsoup.Connection.Method.POST
         ? jsoupConnect.requestBody(JSON.stringify(requestBody)).execute()
         : jsoupConnect.data(requestBody).execute();
@@ -603,17 +603,17 @@ const generateReservationValue = (value) => {
 const MANAGEMENT_SERVICE_URL = "https://fn-reservation.lomeone.com";
 
 const managementServiceApiCall = (path, method, requestBody) => {
-  const jsoupConnect = org.jsoup.Jsoup.connect(MANAGEMENT_SERVICE_URL + path)
-    .header("Content-Type", "application/json")
-    .timeout(5000)
-    .ignoreContentType(true)
-    .ignoreHttpErrors(true)
-    .method(method);
-
   let attempt = 0;
   let response = null;
   while (attempt < 5 && response === null) {
     try {
+      const jsoupConnect = org.jsoup.Jsoup.connect(MANAGEMENT_SERVICE_URL + path)
+      .header("Content-Type", "application/json")
+      .timeout(5000)
+      .ignoreContentType(true)
+      .ignoreHttpErrors(true)
+      .method(method);
+
       response = method === org.jsoup.Connection.Method.POST
         ? jsoupConnect.requestBody(JSON.stringify(requestBody)).execute()
         : jsoupConnect.data(requestBody).execute();
