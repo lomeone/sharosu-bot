@@ -213,7 +213,7 @@ const gameReservation = (gameType) => {
       const errorData = JSON.parse(response.body());
 
       if (errorData.errorCode === "reservation/closed") {
-        throw alreadyGameStartError();
+        throw alreadyGameStartError(gameType);
       }
 
       if (errorData.errorCode === "reservation/not-found") {
@@ -629,7 +629,7 @@ const managementServiceApiCall = (path, method, requestBody) => {
 
 const isRoomMaster = (sender) => {
   return (
-    sender === "파이널나인 이태원대장 영기" ||
+    sender === "파이널나인 이태원점장 영기" ||
     sender === "박재형" ||
     sender === "컴테"
   );
