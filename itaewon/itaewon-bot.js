@@ -85,7 +85,7 @@ const reservationServiceApiCall = (path, method, requestBody) => {
     try {
       const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
       .header("Content-Type", "application/json")
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(method);
@@ -320,7 +320,7 @@ const gameReservation = (gameType) => {
     if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
 
-      return reserve(["영기"], "19:00");
+      return reserve(["명빈"], "19:00");
     }
 
     if (Math.floor(responseStatusCode / 100) === 4) {
@@ -416,7 +416,6 @@ const sitAndGoGame = () => {
 
     return (
       "🅂 🄸 🅃  &  🄶 🄾\n\n" +
-      (gameCount === 1 && isDayFirst ? "🔥첫게임 2배 이벤트🔥\n\n" : "") +
       "➜ OTT 토너먼트 (엔트리제한X)\n" +
       "➜ 200만칩 스타트\n" +
       "➜ 리바인 2회 (300만칩)\n" +
@@ -571,6 +570,7 @@ const ROOM_MASTER_COMMANDS = {
 const isBotRoom = (room) => {
   const botRooms = [
     "파이널나인 이태원점",
+    "파이널나인 이태원점 V2",
     "이태원봇 테스트",
     "파이널나인 이태원점 봇관리방",
   ];
@@ -631,6 +631,7 @@ const isRoomMaster = (sender) => {
   return (
     sender === "파이널나인 이태원점장 영기" ||
     sender === "박재형" ||
+    sender === "A3" ||
     sender === "컴테"
   );
 };
@@ -718,11 +719,19 @@ const staffManagement = () => {
   };
 };
 
+const isConstStaff = (sender) => {
+  return (
+    sender.includes("(이태원점장)") ||
+    sender.includes("(STAFF)")
+  );
+};
+
 const isStaff = (sender) => {
   const staffs = new Set(staffManagement().getStaffs());
 
-  return isRoomMaster(sender) || staffs.has(sender);
+  return isConstStaff(sender) || isRoomMaster(sender) || staffs.has(sender);
 };
+
 
 const isNotStaff = (sender) => {
   return !isStaff(sender);

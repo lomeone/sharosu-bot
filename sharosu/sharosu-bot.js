@@ -80,7 +80,7 @@ const reservationServiceApiCall = (path, method, requestBody) => {
     try {
       const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
       .header("Content-Type", "application/json")
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(method);
@@ -587,7 +587,7 @@ const generateReservationValue = (value) => {
 
 const isStaff = (sender) => {
   return (
-    sender.includes("샤로수길점 대표") ||
+    sender.includes("파이널나인 샤로수길점") ||
     sender.includes("(Manager)") ||
     sender.includes("(STAFF)")
   );
