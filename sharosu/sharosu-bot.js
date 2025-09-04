@@ -362,6 +362,7 @@ const monsterGame = () => {
 
   const reservationListToString = (reservation) => {
     let result = "";
+
     for ([nickname, time] of reservation) {
       result += "◾️ " + nickname + " " + time + "\n";
     }
@@ -402,8 +403,6 @@ const monsterGame = () => {
     endToday: monsterReservation.endToday,
   };
 };
-
-let isDayFirst = true;
 
 const sitAndGoGame = () => {
   const sitAndGoReservation = gameReservation(GAME_TYPE.SIT_AND_GO);
@@ -465,10 +464,7 @@ const sitAndGoGame = () => {
     },
     closeReservation: sitAndGoReservation.closeReservation,
     openReservationNextGame: sitAndGoReservation.openReservationNextGame,
-    endToday: () => {
-      isDayFirst = true;
-      sitAndGoReservation.endToday();
-    },
+    endToday: sitAndGoReservation.endToday,
   };
 };
 
@@ -480,17 +476,18 @@ const weeklyTournamentGame = () => {
   const getGameInformation = (gameCount, reservation) =>
     "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
     "🎲 MTT-Weekly Tournaments \n\n" +
-    "⏱️ Duration - 10 min\n\n" +
-    "◾️일요일 20:00 시작, 스타트칩 150만\n" +
-    "▪️바인 15,000원, 리바인 2회 200만칩\n" +
-    "◾️시드바인 가능 , 포인트바인 불가\n\n" +
+    "◾️일요일 Max 20:00 스타트칩 250만\n" +
+    "▪️바인 20,000원, 리바인 3회 300만칩\n" +
+    "◾️시드바인 가능\n\n" +
     "▪️예약 Event▪️\n" +
     "3레벨 이전 사전 예약 참가자들께는\n" +
-    "기존 150만칩+ 50만칩\n" +
-    "(총 200만칩 제공)\n\n" +
+    "기존 250만칩+ 50만칩\n" +
+    "(총 300만칩 제공)\n\n" +
     "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
-    "•1등: 온라인 토너먼트 참여권 지급\n" +
-    "•바인 인원에 따라 시드 차등지급\n" +
+    "•1등: 주간 온라인 토너먼트 참여\n" +
+    "•엔트리에 따른 시드 차등지급\n" +
+    "•엔트리당 14,000시드\n" +
+    "•30엔트리이상 주간토너먼트 뱃지 지급\n" +
     "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
     "📋예약자 명단 (최소 5포 이상)\n" +
     reservationListToString(reservation) + "\n" +
