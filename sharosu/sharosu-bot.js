@@ -575,7 +575,7 @@ const x2DailyGame = () => {
     }
 
     return result;
-  }
+  };
 
   return {
     gameType: GAME_TYPE.X2_DAILY,
@@ -599,7 +599,7 @@ const x2DailyGame = () => {
     closeReservation: x2DailyReservation.closeReservation,
     openReservationNextGame: x2DailyReservation.openReservationNextGame,
     endToday: x2DailyReservation.endToday,
-  }
+  };
 };
 
 const COMMANDS = {
