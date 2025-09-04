@@ -85,7 +85,7 @@ const reservationServiceApiCall = (path, method, requestBody) => {
     try {
       const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
       .header("Content-Type", "application/json")
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(method);
@@ -320,7 +320,7 @@ const gameReservation = (gameType) => {
     if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
 
-      return reserve(["영기"], "19:00");
+      return reserve(["명빈"], "19:00");
     }
 
     if (Math.floor(responseStatusCode / 100) === 4) {
@@ -402,21 +402,14 @@ const monsterGame = () => {
   };
 };
 
-let isDayFirst = true;
-
 const sitAndGoGame = () => {
   const sitAndGoReservation = gameReservation(GAME_TYPE.SIT_AND_GO);
 
   const getGameInformation = (gameCount, reservation) => {
     const now = new Date();
 
-    if (now.getHours() >= 20) {
-      isDayFirst = false;
-    }
-
     return (
       "🅂 🄸 🅃  &  🄶 🄾\n\n" +
-      (gameCount === 1 && isDayFirst ? "🔥첫게임 2배 이벤트🔥\n\n" : "") +
       "➜ OTT 토너먼트 (엔트리제한X)\n" +
       "➜ 200만칩 스타트\n" +
       "➜ 리바인 2회 (300만칩)\n" +
@@ -469,10 +462,7 @@ const sitAndGoGame = () => {
     },
     closeReservation: sitAndGoReservation.closeReservation,
     openReservationNextGame: sitAndGoReservation.openReservationNextGame,
-    endToday: () => {
-      isDayFirst = true;
-      sitAndGoReservation.endToday();
-    },
+    endToday: sitAndGoReservation.endToday,
   };
 };
 
@@ -484,16 +474,18 @@ const weeklyTournamentGame = () => {
   const getGameInformation = (gameCount, reservation) =>
     "🅆 🄴 🄴 🄺 🄻 🅈\n" +
     "🅃 🄾 🅄 🅁 🄽 🄰 🄼 🄴 🄽 🅃 🅂\n\n" +
-    "➜ 일요일 20:00 시작, 스타트칩 150만\n" +
-    "➜ 바인 15,000원, 리바인 2회 200만칩\n" +
-    "➜ 시드바인 가능 , 포인트바인 불가\n\n" +
+    "➜ 일요일 20:00시 -Max 21:00\n" +
+    "➜ 스타팅칩 250만\n" +
+    "➜ 바인 20,000원, 리바인 3회 300만칩\n" +
+    "➜ 시드바인 가능\n\n" +
     "  ★예약 Event ★\n" +
     "3레벨 이전 사전 예약 참가자들께는\n" +
-    "기존 150만칩+ 50만칩\n" +
-    "(총 200만칩 제공)\n" +
+    "기존 250만칩+ 50만칩\n" +
+    "(총 300만칩 제공)\n" +
     "▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁\n" +
     "•1등: 온라인 토너먼트 참여권 지급\n" +
-    "•바인 인원에 따라 시드 차등 지급\n" +
+    "•30엔트리 이상 주간토너먼트 뱃지 지급\n" +
+    "•엔트리당 14,000시드 순위권 차등지급\n" +
     "▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔\n" +
     "🅁 예약자 명단 (최소 5포 이상)\n\n" +
     reservationListToString(reservation) + "\n" +
@@ -571,6 +563,7 @@ const ROOM_MASTER_COMMANDS = {
 const isBotRoom = (room) => {
   const botRooms = [
     "파이널나인 이태원점",
+    "파이널나인 이태원점 V2",
     "이태원봇 테스트",
     "파이널나인 이태원점 봇관리방",
   ];
@@ -631,6 +624,7 @@ const isRoomMaster = (sender) => {
   return (
     sender === "파이널나인 이태원점장 영기" ||
     sender === "박재형" ||
+    sender === "A3" ||
     sender === "컴테"
   );
 };
@@ -718,11 +712,19 @@ const staffManagement = () => {
   };
 };
 
+const isConstStaff = (sender) => {
+  return (
+    sender.includes("(이태원점장)") ||
+    sender.includes("(STAFF)")
+  );
+};
+
 const isStaff = (sender) => {
   const staffs = new Set(staffManagement().getStaffs());
 
-  return isRoomMaster(sender) || staffs.has(sender);
+  return isConstStaff(sender) || isRoomMaster(sender) || staffs.has(sender);
 };
+
 
 const isNotStaff = (sender) => {
   return !isStaff(sender);
