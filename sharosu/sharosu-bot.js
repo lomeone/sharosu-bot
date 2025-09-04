@@ -71,6 +71,7 @@ const GAME_TYPE = {
   MONSTER: "몬스터",
   SIT_AND_GO: "싯앤고",
   WEEKLY_TOURNAMENT: "주간토너먼트",
+  X2_DAILY: "더블데일리",
 };
 
 const reservationServiceApiCall = (path, method, requestBody) => {
@@ -545,6 +546,62 @@ const weeklyTournamentGame = () => {
   };
 };
 
+const x2DailyGame = () => {
+  const x2DailyReservation = gameReservation(GAME_TYPE.X2_DAILY);
+
+  const getGameInformation = (gameCount, reservation) =>
+    "🏴‍☠️x2 Daily 🏴‍☠️\n\n" +
+    "▪️두배 데일리\n" +
+    "▪️매일 첫 데일리 한정 Event\n" +
+    "▪️게임 종료후 남은칩 X 16 시드적립\n" +
+    "▪️최소인원 4명\n\n" +
+    "📢예약자 명단 (최소 4포/최대 한테이블)\n\n" +
+    "◾️닉네임 +(방문예정시간)\n" +
+    reservationListToString(reservation) + "\n" +
+    "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
+
+  const reservationListToString = (reservation) => {
+    let result = "";
+
+    for ([nickname, time] of reservation) {
+      result += "◾️ " + nickname + " " + time + "\n";
+    }
+
+    if (reservation.length < 10) {
+      const repeatCount = 10 - reservation.length;
+      for (let i = 0; i < repeatCount; i++) {
+        result += "◾️ \n";
+      }
+    }
+
+    return result;
+  }
+
+  return {
+    gameType: GAME_TYPE.X2_DAILY,
+    getGameInformation: () => {
+      const { gameCount, reservation } =
+        x2DailyReservation.getReservationInfo();
+      return getGameInformation(gameCount, reservation);
+    },
+    reserve: (nicknames, time) => {
+      const { gameCount, reservation } = x2DailyReservation.reserve(
+        nicknames,
+        time
+      );
+      return getGameInformation(gameCount, reservation);
+    },
+    cancelReservation: (nicknames) => {
+      const { gameCount, reservation } =
+        x2DailyReservation.cancelReservation(nicknames);
+      return getGameInformation(gameCount, reservation);
+    },
+    closeReservation: x2DailyReservation.closeReservation,
+    openReservationNextGame: x2DailyReservation.openReservationNextGame,
+    endToday: x2DailyReservation.endToday,
+  }
+};
+
 const COMMANDS = {
   RESERVATION_LIST: "!예약창",
   MONSTER: "!몬스터",
@@ -553,6 +610,7 @@ const COMMANDS = {
   SIT_AND_GO_SHORT: "!싯",
   WEEKLY_TOURNAMENT: "!주간토너먼트",
   WEEKLY_TOURNAMENT_SHORT: "!주토",
+  X2_DAILY: "!x2",
   END_TODAY: "!샤로수마감",
 };
 
@@ -639,6 +697,9 @@ function response(
             case COMMANDS.WEEKLY_TOURNAMENT:
             case COMMANDS.WEEKLY_TOURNAMENT_SHORT:
               game = weeklyTournamentGame();
+              break;
+            case COMMANDS.X2_DAILY:
+              game = x2DailyGame();
               break;
             default:
               break;
