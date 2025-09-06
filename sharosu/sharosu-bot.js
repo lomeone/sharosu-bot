@@ -556,7 +556,7 @@ const x2DailyGame = () => {
     "▪️게임 종료후 남은칩 X 16 시드적립\n" +
     "▪️최소인원 4명\n\n" +
     "📢예약자 명단 (최소 4포/최대 한테이블)\n\n" +
-    "◾️ 닉네임 +(방문예정시간)\n" +
+    "◾️닉네임 +(방문예정시간)\n" +
     reservationListToString(reservation) + "\n" +
     "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
@@ -564,13 +564,13 @@ const x2DailyGame = () => {
     let result = "";
 
     for ([nickname, time] of reservation) {
-      result += "◾️ " + nickname + " " + time + "\n";
+      result += "◾️" + nickname + " " + time + "\n";
     }
 
     if (reservation.length < 10) {
       const repeatCount = 10 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
-        result += "◾️ \n";
+        result += "◾️\n";
       }
     }
 
