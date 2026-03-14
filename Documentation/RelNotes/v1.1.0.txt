@@ -1,7 +1,7 @@
 sharosu-bot v1.1.0 Release Notes
 ================================
 
-Fixes since  v1.0.2
+Fixes since v1.0.2
 ===================
 
 * New Feature

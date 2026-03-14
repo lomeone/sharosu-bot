@@ -564,18 +564,18 @@ const x2DailyGame = () => {
     let result = "";
 
     for ([nickname, time] of reservation) {
-      result += "◾️ " + nickname + " " + time + "\n";
+      result += "◾️" + nickname + " " + time + "\n";
     }
 
     if (reservation.length < 10) {
       const repeatCount = 10 - reservation.length;
       for (let i = 0; i < repeatCount; i++) {
-        result += "◾️ \n";
+        result += "◾️\n";
       }
     }
 
     return result;
-  }
+  };
 
   return {
     gameType: GAME_TYPE.X2_DAILY,
@@ -599,7 +599,7 @@ const x2DailyGame = () => {
     closeReservation: x2DailyReservation.closeReservation,
     openReservationNextGame: x2DailyReservation.openReservationNextGame,
     endToday: x2DailyReservation.endToday,
-  }
+  };
 };
 
 const COMMANDS = {
@@ -741,6 +741,7 @@ function response(
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();
+            x2DailyGame().endToday();
             if (new Date().getDay() === 1) {
               weeklyTournamentGame().endToday();
             }

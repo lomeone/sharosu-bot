@@ -554,7 +554,7 @@ const x2DailyGame = () => {
     "➜ 게임 종료후 남은칩 X 16 시드적립\n" +
     "➜ 최소인원 4명 \n\n" +
     "🅁 예약자 명단 (최소 4포/최대 한테이블)\n\n" +
-    "★닉네임 +(방문예정시간)\n" +
+    "★ 닉네임 +(방문예정시간)\n" +
     reservationListToString(reservation) + "\n" +
     "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
 
@@ -573,7 +573,7 @@ const x2DailyGame = () => {
     }
 
     return result;
-  }
+  };
 
   return {
     gameType: GAME_TYPE.X2_DAILY,
@@ -597,7 +597,7 @@ const x2DailyGame = () => {
     closeReservation: x2DailyReservation.closeReservation,
     openReservationNextGame: x2DailyReservation.openReservationNextGame,
     endToday: x2DailyReservation.endToday,
-  }
+  };
 };
 
 const COMMANDS = {
@@ -879,6 +879,7 @@ function response(
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();
+            x2DailyGame().endToday();
             if (new Date().getDay() === 1) {
               weeklyTournamentGame().endToday();
             }
