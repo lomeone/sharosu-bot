@@ -76,6 +76,7 @@ const GAME_TYPE = {
   MONSTER: "몬스터",
   SIT_AND_GO: "싯앤고",
   WEEKLY_TOURNAMENT: "주간토너먼트",
+  X2_DAILY: "더블데일리",
 };
 
 const reservationServiceApiCall = (path, method, requestBody) => {
@@ -85,7 +86,7 @@ const reservationServiceApiCall = (path, method, requestBody) => {
     try {
       const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
       .header("Content-Type", "application/json")
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(method);
@@ -213,7 +214,7 @@ const gameReservation = (gameType) => {
       const errorData = JSON.parse(response.body());
 
       if (errorData.errorCode === "reservation/closed") {
-        throw alreadyGameStartError();
+        throw alreadyGameStartError(gameType);
       }
 
       if (errorData.errorCode === "reservation/not-found") {
@@ -320,7 +321,7 @@ const gameReservation = (gameType) => {
     if (responseStatusCode === 200) {
       const data = JSON.parse(response.body());
 
-      return reserve(["영기"], "19:00");
+      return reserve(["명빈"], "19:00");
     }
 
     if (Math.floor(responseStatusCode / 100) === 4) {
@@ -402,21 +403,14 @@ const monsterGame = () => {
   };
 };
 
-let isDayFirst = true;
-
 const sitAndGoGame = () => {
   const sitAndGoReservation = gameReservation(GAME_TYPE.SIT_AND_GO);
 
   const getGameInformation = (gameCount, reservation) => {
     const now = new Date();
 
-    if (now.getHours() >= 20) {
-      isDayFirst = false;
-    }
-
     return (
       "🅂 🄸 🅃  &  🄶 🄾\n\n" +
-      (gameCount === 1 && isDayFirst ? "🔥첫게임 2배 이벤트🔥\n\n" : "") +
       "➜ OTT 토너먼트 (엔트리제한X)\n" +
       "➜ 200만칩 스타트\n" +
       "➜ 리바인 2회 (300만칩)\n" +
@@ -469,10 +463,7 @@ const sitAndGoGame = () => {
     },
     closeReservation: sitAndGoReservation.closeReservation,
     openReservationNextGame: sitAndGoReservation.openReservationNextGame,
-    endToday: () => {
-      isDayFirst = true;
-      sitAndGoReservation.endToday();
-    },
+    endToday: sitAndGoReservation.endToday,
   };
 };
 
@@ -484,16 +475,18 @@ const weeklyTournamentGame = () => {
   const getGameInformation = (gameCount, reservation) =>
     "🅆 🄴 🄴 🄺 🄻 🅈\n" +
     "🅃 🄾 🅄 🅁 🄽 🄰 🄼 🄴 🄽 🅃 🅂\n\n" +
-    "➜ 일요일 20:00 시작, 스타트칩 150만\n" +
-    "➜ 바인 15,000원, 리바인 2회 200만칩\n" +
-    "➜ 시드바인 가능 , 포인트바인 불가\n\n" +
+    "➜ 일요일 20:00시 -Max 21:00\n" +
+    "➜ 스타팅칩 250만\n" +
+    "➜ 바인 20,000원, 리바인 3회 300만칩\n" +
+    "➜ 시드바인 가능\n\n" +
     "  ★예약 Event ★\n" +
     "3레벨 이전 사전 예약 참가자들께는\n" +
-    "기존 150만칩+ 50만칩\n" +
-    "(총 200만칩 제공)\n" +
+    "기존 250만칩+ 50만칩\n" +
+    "(총 300만칩 제공)\n" +
     "▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁ ▁\n" +
     "•1등: 온라인 토너먼트 참여권 지급\n" +
-    "•바인 인원에 따라 시드 차등 지급\n" +
+    "•30엔트리 이상 주간토너먼트 뱃지 지급\n" +
+    "•엔트리당 14,000시드 순위권 차등지급\n" +
     "▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔ ▔\n" +
     "🅁 예약자 명단 (최소 5포 이상)\n\n" +
     reservationListToString(reservation) + "\n" +
@@ -551,6 +544,62 @@ const weeklyTournamentGame = () => {
   };
 };
 
+const x2DailyGame = () => {
+  const x2DailyReservation = gameReservation(GAME_TYPE.X2_DAILY);
+
+  const getGameInformation = (gameCount, reservation) =>
+    "✪ x2 Daily ✪\n\n" +
+    "➜ 두배 데일리\n" +
+    "➜ 매일 첫 데일리 한정 Event\n" +
+    "➜ 게임 종료후 남은칩 X 16 시드적립\n" +
+    "➜ 최소인원 4명 \n\n" +
+    "🅁 예약자 명단 (최소 4포/최대 한테이블)\n\n" +
+    "★ 닉네임 +(방문예정시간)\n" +
+    reservationListToString(reservation) + "\n" +
+    "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
+
+  const reservationListToString = (reservation) => {
+    let result = "";
+
+    for ([nickname, time] of reservation) {
+      result += "★ " + nickname + " " + time + "\n";
+    }
+
+    if (reservation.length < 10) {
+      const repeatCount = 10 - reservation.length;
+      for (let i = 0; i < repeatCount; i++) {
+        result += "★ \n";
+      }
+    }
+
+    return result;
+  };
+
+  return {
+    gameType: GAME_TYPE.X2_DAILY,
+    getGameInformation: () => {
+      const { gameCount, reservation } =
+        x2DailyReservation.getReservationInfo();
+      return getGameInformation(gameCount, reservation);
+    },
+    reserve: (nicknames, time) => {
+      const { gameCount, reservation } = x2DailyReservation.reserve(
+        nicknames,
+        time
+      );
+      return getGameInformation(gameCount, reservation);
+    },
+    cancelReservation: (nicknames) => {
+      const { gameCount, reservation } =
+        x2DailyReservation.cancelReservation(nicknames);
+      return getGameInformation(gameCount, reservation);
+    },
+    closeReservation: x2DailyReservation.closeReservation,
+    openReservationNextGame: x2DailyReservation.openReservationNextGame,
+    endToday: x2DailyReservation.endToday,
+  };
+};
+
 const COMMANDS = {
   RESERVATION_LIST: "!예약창",
   MONSTER: "!몬스터",
@@ -559,6 +608,7 @@ const COMMANDS = {
   SIT_AND_GO_SHORT: "!싯",
   WEEKLY_TOURNAMENT: "!주간토너먼트",
   WEEKLY_TOURNAMENT_SHORT: "!주토",
+  X2_DAILY: "!x2",
   END_TODAY: "!이태원마감",
 };
 
@@ -571,6 +621,7 @@ const ROOM_MASTER_COMMANDS = {
 const isBotRoom = (room) => {
   const botRooms = [
     "파이널나인 이태원점",
+    "파이널나인 이태원점 V2",
     "이태원봇 테스트",
     "파이널나인 이태원점 봇관리방",
   ];
@@ -629,8 +680,9 @@ const managementServiceApiCall = (path, method, requestBody) => {
 
 const isRoomMaster = (sender) => {
   return (
-    sender === "파이널나인 이태원대장 영기" ||
+    sender === "파이널나인 이태원점장 영기" ||
     sender === "박재형" ||
+    sender === "A3" ||
     sender === "컴테"
   );
 };
@@ -718,11 +770,19 @@ const staffManagement = () => {
   };
 };
 
+const isConstStaff = (sender) => {
+  return (
+    sender.includes("(이태원점장)") ||
+    sender.includes("(STAFF)")
+  );
+};
+
 const isStaff = (sender) => {
   const staffs = new Set(staffManagement().getStaffs());
 
-  return isRoomMaster(sender) || staffs.has(sender);
+  return isConstStaff(sender) || isRoomMaster(sender) || staffs.has(sender);
 };
+
 
 const isNotStaff = (sender) => {
   return !isStaff(sender);
@@ -776,6 +836,9 @@ function response(
             case COMMANDS.WEEKLY_TOURNAMENT_SHORT:
               game = weeklyTournamentGame();
               break;
+            case COMMANDS.X2_DAILY:
+              game = x2DailyGame();
+              break;
             default:
               break;
           }
@@ -816,6 +879,7 @@ function response(
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();
+            x2DailyGame().endToday();
             if (new Date().getDay() === 1) {
               weeklyTournamentGame().endToday();
             }

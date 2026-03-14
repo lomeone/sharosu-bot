@@ -71,6 +71,7 @@ const GAME_TYPE = {
   MONSTER: "몬스터",
   SIT_AND_GO: "싯앤고",
   WEEKLY_TOURNAMENT: "주간토너먼트",
+  X2_DAILY: "더블데일리",
 };
 
 const reservationServiceApiCall = (path, method, requestBody) => {
@@ -80,7 +81,7 @@ const reservationServiceApiCall = (path, method, requestBody) => {
     try {
       const jsoupConnect = org.jsoup.Jsoup.connect(RESERVATION_SERVER_URL + path)
       .header("Content-Type", "application/json")
-      .timeout(5000)
+      .timeout(10000)
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .method(method);
@@ -208,7 +209,7 @@ const gameReservation = (gameType) => {
       const errorData = JSON.parse(response.body());
 
       if (errorData.errorCode === "reservation/closed") {
-        throw alreadyGameStartError();
+        throw alreadyGameStartError(gameType);
       }
 
       if (errorData.errorCode === "reservation/not-found") {
@@ -362,6 +363,7 @@ const monsterGame = () => {
 
   const reservationListToString = (reservation) => {
     let result = "";
+
     for ([nickname, time] of reservation) {
       result += "◾️ " + nickname + " " + time + "\n";
     }
@@ -402,8 +404,6 @@ const monsterGame = () => {
     endToday: monsterReservation.endToday,
   };
 };
-
-let isDayFirst = true;
 
 const sitAndGoGame = () => {
   const sitAndGoReservation = gameReservation(GAME_TYPE.SIT_AND_GO);
@@ -465,10 +465,7 @@ const sitAndGoGame = () => {
     },
     closeReservation: sitAndGoReservation.closeReservation,
     openReservationNextGame: sitAndGoReservation.openReservationNextGame,
-    endToday: () => {
-      isDayFirst = true;
-      sitAndGoReservation.endToday();
-    },
+    endToday: sitAndGoReservation.endToday,
   };
 };
 
@@ -480,17 +477,18 @@ const weeklyTournamentGame = () => {
   const getGameInformation = (gameCount, reservation) =>
     "🏴‍☠️Final Nine 4ㅑ로수길 🏴‍☠️\n" +
     "🎲 MTT-Weekly Tournaments \n\n" +
-    "⏱️ Duration - 10 min\n\n" +
-    "◾️일요일 20:00 시작, 스타트칩 150만\n" +
-    "▪️바인 15,000원, 리바인 2회 200만칩\n" +
-    "◾️시드바인 가능 , 포인트바인 불가\n\n" +
+    "◾️일요일 Max 20:00 스타트칩 250만\n" +
+    "▪️바인 20,000원, 리바인 3회 300만칩\n" +
+    "◾️시드바인 가능\n\n" +
     "▪️예약 Event▪️\n" +
     "3레벨 이전 사전 예약 참가자들께는\n" +
-    "기존 150만칩+ 50만칩\n" +
-    "(총 200만칩 제공)\n\n" +
+    "기존 250만칩+ 50만칩\n" +
+    "(총 300만칩 제공)\n\n" +
     "⬛️◼️◾️▪️▪️◾️◼️⬛️\n" +
-    "•1등: 온라인 토너먼트 참여권 지급\n" +
-    "•바인 인원에 따라 시드 차등지급\n" +
+    "•1등: 주간 온라인 토너먼트 참여\n" +
+    "•엔트리에 따른 시드 차등지급\n" +
+    "•엔트리당 14,000시드\n" +
+    "•30엔트리이상 주간토너먼트 뱃지 지급\n" +
     "⬛️◼️◾️▪️▪️◾️◼️⬛️\n\n" +
     "📋예약자 명단 (최소 5포 이상)\n" +
     reservationListToString(reservation) + "\n" +
@@ -548,6 +546,62 @@ const weeklyTournamentGame = () => {
   };
 };
 
+const x2DailyGame = () => {
+  const x2DailyReservation = gameReservation(GAME_TYPE.X2_DAILY);
+
+  const getGameInformation = (gameCount, reservation) =>
+    "🏴‍☠️x2 Daily 🏴‍☠️\n\n" +
+    "▪️두배 데일리\n" +
+    "▪️매일 첫 데일리 한정 Event\n" +
+    "▪️게임 종료후 남은칩 X 16 시드적립\n" +
+    "▪️최소인원 4명\n\n" +
+    "📢예약자 명단 (최소 4포/최대 한테이블)\n\n" +
+    "◾️닉네임 +(방문예정시간)\n" +
+    reservationListToString(reservation) + "\n" +
+    "♠ 문의사항은 핑크왕관에게 1:1톡 부탁드립니다";
+
+  const reservationListToString = (reservation) => {
+    let result = "";
+
+    for ([nickname, time] of reservation) {
+      result += "◾️" + nickname + " " + time + "\n";
+    }
+
+    if (reservation.length < 10) {
+      const repeatCount = 10 - reservation.length;
+      for (let i = 0; i < repeatCount; i++) {
+        result += "◾️\n";
+      }
+    }
+
+    return result;
+  };
+
+  return {
+    gameType: GAME_TYPE.X2_DAILY,
+    getGameInformation: () => {
+      const { gameCount, reservation } =
+        x2DailyReservation.getReservationInfo();
+      return getGameInformation(gameCount, reservation);
+    },
+    reserve: (nicknames, time) => {
+      const { gameCount, reservation } = x2DailyReservation.reserve(
+        nicknames,
+        time
+      );
+      return getGameInformation(gameCount, reservation);
+    },
+    cancelReservation: (nicknames) => {
+      const { gameCount, reservation } =
+        x2DailyReservation.cancelReservation(nicknames);
+      return getGameInformation(gameCount, reservation);
+    },
+    closeReservation: x2DailyReservation.closeReservation,
+    openReservationNextGame: x2DailyReservation.openReservationNextGame,
+    endToday: x2DailyReservation.endToday,
+  };
+};
+
 const COMMANDS = {
   RESERVATION_LIST: "!예약창",
   MONSTER: "!몬스터",
@@ -556,6 +610,7 @@ const COMMANDS = {
   SIT_AND_GO_SHORT: "!싯",
   WEEKLY_TOURNAMENT: "!주간토너먼트",
   WEEKLY_TOURNAMENT_SHORT: "!주토",
+  X2_DAILY: "!x2",
   END_TODAY: "!샤로수마감",
 };
 
@@ -587,7 +642,7 @@ const generateReservationValue = (value) => {
 
 const isStaff = (sender) => {
   return (
-    sender.includes("샤로수길점 대표") ||
+    sender.includes("파이널나인 샤로수길점") ||
     sender.includes("(Manager)") ||
     sender.includes("(STAFF)")
   );
@@ -643,6 +698,9 @@ function response(
             case COMMANDS.WEEKLY_TOURNAMENT_SHORT:
               game = weeklyTournamentGame();
               break;
+            case COMMANDS.X2_DAILY:
+              game = x2DailyGame();
+              break;
             default:
               break;
           }
@@ -683,6 +741,7 @@ function response(
             );
             monsterGame().endToday();
             sitAndGoGame().endToday();
+            x2DailyGame().endToday();
             if (new Date().getDay() === 1) {
               weeklyTournamentGame().endToday();
             }
